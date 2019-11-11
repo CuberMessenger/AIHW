@@ -1,0 +1,35 @@
+﻿<Page x:Class="AIHW.TSPLSPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:AIHW"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Canvas Name="TSPLSCanvas"
+                Margin="20"
+                Background="AliceBlue"
+                Grid.Column="0"
+                AllowDrop="True"
+                DragOver="TSPLSCanvas_DragOver"
+                Drop="TSPLSCanvas_Drop">
+        </Canvas>
+
+        <StackPanel Grid.Column="1"
+                    Orientation="Vertical">
+            <Button Name="CalculateButtom"
+                    Content="Calculate"
+                    FontSize="24"
+                    HorizontalAlignment="Center"
+                    Margin="20"
+                    Click="CalculateButtom_Click"/>
+        </StackPanel>
+    </Grid>
+</Page>
