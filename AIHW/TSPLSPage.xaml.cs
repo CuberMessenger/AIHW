@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -24,15 +26,20 @@ namespace AIHW {
     /// </summary>
     public sealed partial class TSPLSPage : Page {
         private int N { get; set; }
+        private double Cost { get; set; }
         private Random Random { get; set; }
-        private List<int> CityOrder { get; set; }
+        private List<Line> Lines { get; set; }
         private double OptimalCost { get; set; }
-        private List<(double, double)> Coordinate { get; set; }
         private double[,] Adjacency { get; set; }
+        private List<int> CityOrder { get; set; }
+        private CoreDispatcher UIDispatcher { get; set; }
+        private List<(double, double)> Coordinate { get; set; }
         public TSPLSPage() {
             this.InitializeComponent();
             Random = new Random(2223);
             Coordinate = new List<(double, double)>();
+            Lines = new List<Line>();
+            UIDispatcher = Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().CoreWindow.Dispatcher;
         }
 
         private double TSPCost() {
@@ -45,32 +52,40 @@ namespace AIHW {
 
         private (int, int) RandomPair() => (Random.Next(0, N), Random.Next(0, N));
 
-        private double SimulatedAnnealingTSP() {
+        private void Swap<DataType>(DataType a, DataType b) {
+            DataType temp = a;
+            a = b;
+            b = temp;
+        }
+
+        private async Task<double> SimulatedAnnealingTSP() {
             OptimalCost *= 1.25;
             (int, int) switchPair;
-            double T = 500.0, cost = TSPCost(), deltaCost;
-            while (cost > OptimalCost) {
-                for (int i = 0; cost > OptimalCost && i < 0x00002FFF; i++) {
+            Cost = TSPCost();
+            double T = 500.0, deltaCost;
+            while (Cost > OptimalCost) {
+                for (int i = 0; Cost > OptimalCost && i < 0x00002FFF; i++) {
                     //SA
-                    cost = TSPCost();
+                    Cost = TSPCost();
                     switchPair = RandomPair();
-                    swap(cityOrder[switchPair.first], cityOrder[switchPair.second]);
+                    Swap(CityOrder[switchPair.Item1], CityOrder[switchPair.Item2]);
 
-                    deltaCost = TSPCost() - cost;
-                    printf("Cost: %.3f\tT: %.3f\t", cost, T);
+                    deltaCost = TSPCost() - Cost;
+                    Console.WriteLine("Cost: %.3f\tT: %.3f\t", Cost, T);
                     if (deltaCost >= 0) {
-                        printf("P: %.3f\n", exp(-(deltaCost / T)));
+                        Console.WriteLine("P: %.3f\n", Math.Exp(-(deltaCost / T)));
                     }
                     else {
-                        printf("\n");
+                        Console.WriteLine("\n");
                     }
-                    if (deltaCost >= 0 && (rand() / (double)0x00007FFF) >= exp(-(deltaCost / T))) {
-                        swap(cityOrder[switchPair.first], cityOrder[switchPair.second]);
+                    if (deltaCost >= 0 && (Random.NextDouble() >= Math.Exp(-(deltaCost / T)))) {
+                        Swap(CityOrder[switchPair.Item1], CityOrder[switchPair.Item2]);
                     }
                 }
+                await UIDispatcher.RunAsync(CoreDispatcherPriority.High, () => DisplayRoute());
                 T *= 0.99;
             }
-            return cost;
+            return Cost;
         }
 
         private void NormalizeCoordinateToCanvas() {
@@ -88,7 +103,10 @@ namespace AIHW {
             }
         }
 
-        private void DisplayRoute() {
+        public void DisplayRoute() {
+            foreach (Line line in Lines) {
+                TSPLSCanvas.Children.Remove(line);
+            }
             SolidColorBrush skyBlueBrush = new SolidColorBrush(Windows.UI.Colors.SkyBlue);
             for (int i = 1; i < N; i++) {
                 Line current = new Line {
@@ -99,7 +117,7 @@ namespace AIHW {
                     X2 = Coordinate[CityOrder[i]].Item1 + 5d,
                     Y2 = Coordinate[CityOrder[i]].Item2 + 5d
                 };
-
+                Lines.Add(current);
                 TSPLSCanvas.Children.Add(current);
             }
         }
@@ -164,12 +182,13 @@ namespace AIHW {
             }
         }
 
-        private void CalculateButtom_Click(object sender, RoutedEventArgs e) {
+        private async void CalculateButtom_Click(object sender, RoutedEventArgs e) {
             CityOrder = new List<int>();
             for (int i = 0; i < N; i++) {
                 CityOrder.Add(i);
             }
-            DisplayRoute();
+            await UIDispatcher.RunAsync(CoreDispatcherPriority.High, () => DisplayRoute());
+            await SimulatedAnnealingTSP();
         }
     }
 }
