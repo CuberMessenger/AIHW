@@ -20,12 +20,17 @@ using Windows.UI.Xaml.Shapes;
 
 namespace AIHW {
     public sealed partial class TSPLSSAPage : TSPBasePage {
+        private bool UseSimulatedAnnealing { get; set; }
         private double Temperature { get; set; }
         private bool DisplayEveryStep { get; set; }
+
         public TSPLSSAPage() : base() {
             this.InitializeComponent();
             DisplayEveryStep = true;
+            DataLoadedEvent += TSPLSSAPageDataLoadedEventHandler;
         }
+
+        private void TSPLSSAPageDataLoadedEventHandler(object sender, EventArgs e) => Bindings.Update();
 
         private (int, int) RandomPair() => (Random.Next(0, N), Random.Next(0, N));
 
@@ -35,14 +40,72 @@ namespace AIHW {
             CityOrder[switchPair.Item2] = temp;
         }
 
-        private async void SimulatedAnnealingTSP() {
-            OptimalCost *= 1.1;
+        private async void LocalSearchTSP() {
             (int, int) switchPair;
             Cost = TSPCost();
-            Temperature = 500d;
+            double minCost, currentCost;
+            List<int> bestNeighbour = new List<int>();
+            while (Cost > OptimalCost) {
+                minCost = double.MaxValue;
+                bestNeighbour.Clear();
+                //Switch two
+                for (int i = 0; i < N; i++) {
+                    for (int j = i + 1; j < N; j++) {
+                        SwapPair((i, j));
+                        currentCost = TSPCost();
+                        if (currentCost < minCost) {
+                            minCost = currentCost;
+                            bestNeighbour = CityOrder.ToList();
+                        }
+                        SwapPair((i, j));
+                    }
+                }
+                //Random switch four
+                for (int i = 0; i < N * N; i++) {
+                    var switchPair1 = RandomPair();
+                    var switchPair2 = RandomPair();
+                    SwapPair(switchPair1);
+                    SwapPair(switchPair2);
+                    currentCost = TSPCost();
+                    if (currentCost < minCost) {
+                        minCost = currentCost;
+                        bestNeighbour = CityOrder.ToList();
+                    }
+                    SwapPair(switchPair2);
+                    SwapPair(switchPair1);
+                }
+
+                //Check Dead End
+                if (minCost == Cost) {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                        TSPLSResultTextBlock.Text += " DeadEnd X_X";
+                    });
+                    return;
+                }
+
+                CityOrder.Clear();
+                CityOrder = bestNeighbour.ToList();
+                Cost = TSPCost();
+                if (DisplayEveryStep) {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                        DisplayRoute(TSPLSSACanvas);
+                        Bindings.Update();
+                    });
+                }
+            }
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                DisplayRoute(TSPLSSACanvas);
+                TSPLSResultTextBlock.Text += " Done!";
+            });
+        }
+
+        private async void SimulatedAnnealingLocalSearchTSP() {
+            (int, int) switchPair;
+            Cost = TSPCost();
+            Temperature = 200d;
             double deltaCost;
             while (Cost > OptimalCost) {
-                for (int i = 0; Cost > OptimalCost && i < 0x00003FFF; i++) {
+                for (int i = 0; Cost > OptimalCost && i < 0x0000FFFF; i++) {
                     //SA
                     Cost = TSPCost();
                     switchPair = RandomPair();
@@ -74,10 +137,17 @@ namespace AIHW {
             }
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 DisplayRoute(TSPLSSACanvas);
-                TSPLSResultTextBlock.Text += "Done!";
+                TSPLSResultTextBlock.Text += " Done!";
             });
         }
 
-        private void CalculateButtom_Click(object sender, RoutedEventArgs e) => Task.Run(() => SimulatedAnnealingTSP());
+        private void CalculateButtom_Click(object sender, RoutedEventArgs e) {
+            if (UseSimulatedAnnealing) {
+                Task.Run(() => SimulatedAnnealingLocalSearchTSP());
+            }
+            else {
+                Task.Run(() => LocalSearchTSP());
+            }
+        }
     }
 }

@@ -34,6 +34,16 @@
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Left">
                 <TextBlock FontSize="24"
+                           Text="Use SA: "
+                           Margin="20 0 8 7" />
+                <ToggleSwitch Name="UseSAToggleSwitch"
+                              FontSize="24"
+                              IsOn="{x:Bind UseSimulatedAnnealing, Mode=TwoWay}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left">
+                <TextBlock FontSize="24"
                            Text="Display every step: "
                            Margin="20 0 8 7" />
                 <ToggleSwitch Name="DisplayEveryStepToggleSwitch"

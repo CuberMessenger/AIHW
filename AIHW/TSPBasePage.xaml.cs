@@ -26,9 +26,12 @@ namespace AIHW {
         internal double[,] Adjacency { get; set; }
         internal List<int> CityOrder { get; set; }
         internal List<(double, double)> Coordinate { get; set; }
+
+        public event EventHandler DataLoadedEvent;
+
         public TSPBasePage() {
             this.InitializeComponent();
-            this.Random = new Random(2223);
+            this.Random = new Random((int)DateTime.Now.Ticks);
             Coordinate = new List<(double, double)>();
             Lines = new List<Line>();
         }
@@ -98,7 +101,7 @@ namespace AIHW {
             var allraw = rawData.Split("\r\n".ToArray());
             var info = allraw[6].Split(" ");
             N = int.Parse(info[0]);
-            OptimalCost = double.Parse(info[1]);
+            OptimalCost = double.Parse(info[1]) * 1.1d;
             Adjacency = new double[N, N];
 
             for (int i = 0; i < N; i++) {
@@ -127,8 +130,10 @@ namespace AIHW {
                         for (int i = 0; i < N; i++) {
                             CityOrder.Add(i);
                         }
+                        CityOrder = CityOrder.OrderBy(a => Random.Next(0, 3) - 1).ToList();
                         Cost = TSPCost();
                         DisplayRoute(canvas);
+                        DataLoadedEvent?.Invoke(this, null);
                     }
                 }
             }
