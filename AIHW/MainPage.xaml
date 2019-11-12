@@ -15,19 +15,19 @@
                         IsBackButtonVisible="Collapsed"
                         IsSettingsVisible="False">
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="TSP Local Search"
-                                    x:Name="TSPLS"
-                                    IsSelected="True">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe MDL2 Assets"
-                                  Glyph="&#xEC40;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
                 <NavigationViewItem Content="TSP Local Search Simulated Annealing"
                                     x:Name="TSPLSSA">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe MDL2 Assets"
                                   Glyph="&#xE709;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="TSP Genetic Algorithm"
+                                    x:Name="TSPGA"
+                                    IsSelected="True">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets"
+                                  Glyph="&#xE902;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem Content="BPNN"

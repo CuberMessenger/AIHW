@@ -101,7 +101,7 @@ namespace AIHW {
             var allraw = rawData.Split("\r\n".ToArray());
             var info = allraw[6].Split(" ");
             N = int.Parse(info[0]);
-            OptimalCost = double.Parse(info[1]) * 1.1d;
+            OptimalCost = double.Parse(info[1]) * 1.05d;
             Adjacency = new double[N, N];
 
             for (int i = 0; i < N; i++) {

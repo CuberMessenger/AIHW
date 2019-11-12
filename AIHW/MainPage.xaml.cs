@@ -17,7 +17,7 @@ namespace AIHW {
     public sealed partial class MainPage : Page {
         public MainPage() {
             this.InitializeComponent();
-            MainPageNavigationViewFrame.NavigateToType(typeof(TSPLSPage), null, null);
+            MainPageNavigationViewFrame.NavigateToType(typeof(TSPLSSAPage), null, null);
         }
 
         private void MainPageNavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args) {
@@ -28,11 +28,11 @@ namespace AIHW {
             }
             var itemContainer = args.InvokedItemContainer.Name;
             Type pageType = null;
-            if (itemContainer == "TSPLS") {
-                pageType = typeof(TSPLSPage);
-            }
-            else if (itemContainer == "TSPLSSA") {
+            if (itemContainer == "TSPLSSA") {
                 pageType = typeof(TSPLSSAPage);
+            }
+            else if (itemContainer == "TSPGA") {
+                pageType = typeof(TSPGAPage);
             }
             else if (itemContainer == "BPNN") {
                 pageType = typeof(BPNNPage);

@@ -132,8 +132,8 @@
     <Compile Include="TSPBasePage.xaml.cs">
       <DependentUpon>TSPBasePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TSPLSPage.xaml.cs">
-      <DependentUpon>TSPLSPage.xaml</DependentUpon>
+    <Compile Include="TSPGAPage.xaml.cs">
+      <DependentUpon>TSPGAPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="TSPLSSAPage.xaml.cs">
       <DependentUpon>TSPLSSAPage.xaml</DependentUpon>
@@ -175,7 +175,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="TSPLSPage.xaml">
+    <Page Include="TSPGAPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
