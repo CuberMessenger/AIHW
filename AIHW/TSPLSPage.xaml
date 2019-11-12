@@ -8,28 +8,7 @@
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="5*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-
-        <Canvas Name="TSPLSCanvas"
-                Margin="20"
-                Background="AliceBlue"
-                Grid.Column="0"
-                AllowDrop="True"
-                DragOver="TSPLSCanvas_DragOver"
-                Drop="TSPLSCanvas_Drop">
-        </Canvas>
-
-        <StackPanel Grid.Column="1"
-                    Orientation="Vertical">
-            <Button Name="CalculateButtom"
-                    Content="Calculate"
-                    FontSize="24"
-                    HorizontalAlignment="Center"
-                    Margin="20"
-                    Click="CalculateButtom_Click"/>
-        </StackPanel>
+        <TextBlock Text="TSPLSSA!"
+                   FontSize="48" />
     </Grid>
 </Page>

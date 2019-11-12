@@ -16,7 +16,8 @@
                         IsSettingsVisible="False">
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="TSP Local Search"
-                                    x:Name="TSPLS">
+                                    x:Name="TSPLS"
+                                    IsSelected="True">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe MDL2 Assets"
                                   Glyph="&#xEC40;" />
