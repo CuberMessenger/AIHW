@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
 namespace AIHW {
-    public sealed partial class TSPLSPage : Page {
+    public sealed partial class TSPLSPage : TSPBasePage {
         
         public TSPLSPage() {
             this.InitializeComponent();

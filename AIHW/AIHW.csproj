@@ -129,6 +129,9 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TSPBasePage.xaml.cs">
+      <DependentUpon>TSPBasePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TSPLSPage.xaml.cs">
       <DependentUpon>TSPLSPage.xaml</DependentUpon>
     </Compile>
@@ -167,6 +170,10 @@
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="TSPBasePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="TSPLSPage.xaml">
       <SubType>Designer</SubType>

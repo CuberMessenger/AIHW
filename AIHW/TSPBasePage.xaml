@@ -1,4 +1,4 @@
-﻿<local:TSPBasePage x:Class="AIHW.TSPLSPage"
+﻿<Page x:Class="AIHW.TSPBasePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:AIHW"
@@ -6,9 +6,5 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
-    <Grid>
-        <TextBlock Text="TSPLSSA!"
-                   FontSize="48" />
-    </Grid>
-</local:TSPBasePage>
+    <Grid></Grid>
+</Page>
