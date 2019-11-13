@@ -17,8 +17,27 @@
                 DragOver="TSPCanvasDragOver"
                 Drop="TSPCanvasDrop" />
 
-        <TextBlock Grid.Column="1"
-                   FontSize="48"
-                   Text="GA" />
+        <StackPanel Grid.Column="1"
+                    Orientation="Vertical">
+            <Button Name="CalculateButtom"
+                    Content="Calculate"
+                    FontSize="24"
+                    HorizontalAlignment="Left"
+                    Margin="20"
+                    Click="CalculateButtomClick" />
+
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left">
+                <TextBlock FontSize="24"
+                           Margin="20 0"
+                           Text="Cost: " />
+
+                <TextBlock Name="TSPLSResultTextBlock"
+                           FontSize="24"
+                           Text="{x:Bind Cost, Mode=OneWay}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </local:TSPBasePage>
