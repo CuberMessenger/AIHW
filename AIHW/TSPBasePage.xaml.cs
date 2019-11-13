@@ -22,6 +22,7 @@ namespace AIHW {
         internal double Cost { get; set; }
         internal Random Random { get; set; }
         internal List<Line> Lines { get; set; }
+        internal double TargetCost { get; set; }
         internal double OptimalCost { get; set; }
         internal double[,] Adjacency { get; set; }
         internal List<int> CityOrder { get; set; }
@@ -38,8 +39,8 @@ namespace AIHW {
 
         internal double TSPCost() {
             double answer = 0d;
-            for (int i = 1; i < N; i++) {
-                answer += Adjacency[CityOrder[i - 1], CityOrder[i]];
+            for (int i = 0; i < N; i++) {
+                answer += Adjacency[CityOrder[i], CityOrder[(i + 1) % N]];
             }
             return answer;
         }
@@ -101,7 +102,8 @@ namespace AIHW {
             var allraw = rawData.Split("\r\n".ToArray());
             var info = allraw[6].Split(" ");
             N = int.Parse(info[0]);
-            OptimalCost = double.Parse(info[1]) * 1.1d;
+            OptimalCost = double.Parse(info[1]);
+            TargetCost = OptimalCost * 1.01d;
             Adjacency = new double[N, N];
 
             for (int i = 0; i < N; i++) {
@@ -130,7 +132,7 @@ namespace AIHW {
                         for (int i = 0; i < N; i++) {
                             CityOrder.Add(i);
                         }
-                        CityOrder = CityOrder.OrderBy(a => Random.Next(0, 3) - 1).ToList();
+                        CityOrder.Sort((a, b) => Random.Next(0, 3) - 1);
                         Cost = TSPCost();
                         DisplayRoute(canvas);
                         DataLoadedEvent?.Invoke(this, null);

@@ -28,6 +28,8 @@ namespace AIHW {
             this.InitializeComponent();
             DisplayEveryStep = true;
             DataLoadedEvent += TSPLSSAPageDataLoadedEventHandler;
+
+            TargetCost = OptimalCost * 1.05d;
         }
 
         private void TSPLSSAPageDataLoadedEventHandler(object sender, EventArgs e) => Bindings.Update();
@@ -45,7 +47,7 @@ namespace AIHW {
             Cost = TSPCost();
             double minCost, currentCost;
             List<int> bestNeighbour = new List<int>();
-            while (Cost > OptimalCost) {
+            while (Cost > TargetCost) {
                 minCost = double.MaxValue;
                 bestNeighbour.Clear();
                 //Switch two
@@ -104,8 +106,8 @@ namespace AIHW {
             Cost = TSPCost();
             Temperature = 200d;
             double deltaCost;
-            while (Cost > OptimalCost) {
-                for (int i = 0; Cost > OptimalCost && i < 0x0000FFFF; i++) {
+            while (Cost > TargetCost || Temperature >= 1d) {
+                for (int i = 0; Cost > TargetCost && i < 0x0000FFFF; i++) {
                     //SA
                     Cost = TSPCost();
                     switchPair = RandomPair();
