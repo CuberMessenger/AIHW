@@ -13,14 +13,10 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Canvas Name="TSPLSSACanvas"
-                Margin="20"
-                Background="AliceBlue"
-                Grid.Column="0"
-                AllowDrop="True"
-                DragOver="TSPLSSACanvas_DragOver"
-                Drop="TSPLSSACanvas_Drop">
-        </Canvas>
+        <Canvas Name="TSPCanvas"
+                Style="{StaticResource TSPCanvasStyle}"
+                DragOver="TSPCanvasDragOver"
+                Drop="TSPCanvasDrop" />
 
         <StackPanel Grid.Column="1"
                     Orientation="Vertical">
@@ -29,7 +25,7 @@
                     FontSize="24"
                     HorizontalAlignment="Left"
                     Margin="20"
-                    Click="CalculateButtom_Click" />
+                    Click="CalculateButtomClick" />
 
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Left">

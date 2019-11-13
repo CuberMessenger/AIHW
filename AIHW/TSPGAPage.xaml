@@ -6,9 +6,19 @@
                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                    mc:Ignorable="d"
                    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
     <Grid>
-        <TextBlock FontSize="48"
-                   Text="TSPGA!" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Canvas Name="TSPCanvas"
+                Style="{StaticResource TSPCanvasStyle}"
+                DragOver="TSPCanvasDragOver"
+                Drop="TSPCanvasDrop" />
+
+        <TextBlock Grid.Column="1"
+                   FontSize="48"
+                   Text="GA" />
     </Grid>
 </local:TSPBasePage>

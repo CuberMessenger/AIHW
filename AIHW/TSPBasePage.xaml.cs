@@ -101,7 +101,7 @@ namespace AIHW {
             var allraw = rawData.Split("\r\n".ToArray());
             var info = allraw[6].Split(" ");
             N = int.Parse(info[0]);
-            OptimalCost = double.Parse(info[1]) * 1.05d;
+            OptimalCost = double.Parse(info[1]) * 1.1d;
             Adjacency = new double[N, N];
 
             for (int i = 0; i < N; i++) {
@@ -116,7 +116,7 @@ namespace AIHW {
             }
         }
 
-        internal async void TSPLSSACanvas_Drop(object sender, DragEventArgs e) {
+        internal async void TSPCanvasDrop(object sender, DragEventArgs e) {
             if (e.DataView.Contains(StandardDataFormats.StorageItems)) {
                 var items = await e.DataView.GetStorageItemsAsync();
                 if (items.Count > 0) {
@@ -139,7 +139,7 @@ namespace AIHW {
             }
         }
 
-        internal void TSPLSSACanvas_DragOver(object sender, DragEventArgs e) {
+        internal void TSPCanvasDragOver(object sender, DragEventArgs e) {
             e.AcceptedOperation = DataPackageOperation.Copy;
             if (e.DragUIOverride != null) {
                 e.DragUIOverride.Caption = "Load file";

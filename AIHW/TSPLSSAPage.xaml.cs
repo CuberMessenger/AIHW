@@ -88,13 +88,13 @@ namespace AIHW {
                 Cost = TSPCost();
                 if (DisplayEveryStep) {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                        DisplayRoute(TSPLSSACanvas);
+                        DisplayRoute(TSPCanvas);
                         Bindings.Update();
                     });
                 }
             }
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                DisplayRoute(TSPLSSACanvas);
+                DisplayRoute(TSPCanvas);
                 TSPLSResultTextBlock.Text += " Done!";
             });
         }
@@ -124,24 +124,24 @@ namespace AIHW {
                     }
                     if (DisplayEveryStep) {
                         await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                            DisplayRoute(TSPLSSACanvas);
+                            DisplayRoute(TSPCanvas);
                             Bindings.Update();
                         });
                     }
                 }
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                    DisplayRoute(TSPLSSACanvas);
+                    DisplayRoute(TSPCanvas);
                     Bindings.Update();
                 });
                 Temperature *= 0.99;
             }
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                DisplayRoute(TSPLSSACanvas);
+                DisplayRoute(TSPCanvas);
                 TSPLSResultTextBlock.Text += " Done!";
             });
         }
 
-        private void CalculateButtom_Click(object sender, RoutedEventArgs e) {
+        private void CalculateButtomClick(object sender, RoutedEventArgs e) {
             if (UseSimulatedAnnealing) {
                 Task.Run(() => SimulatedAnnealingLocalSearchTSP());
             }

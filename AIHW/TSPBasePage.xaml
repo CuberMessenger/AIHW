@@ -6,5 +6,17 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-    <Grid></Grid>
+    <Page.Resources>
+        <Style x:Key="TSPCanvasStyle"
+               TargetType="Canvas">
+            <Setter Property="Margin"
+                    Value="20" />
+            <Setter Property="Background"
+                    Value="AliceBlue" />
+            <Setter Property="Grid.Column"
+                    Value="0" />
+            <Setter Property="AllowDrop"
+                    Value="True" />
+        </Style>
+    </Page.Resources>
 </Page>
