@@ -28,23 +28,12 @@ namespace AIHW {
             this.InitializeComponent();
             DisplayEveryStep = true;
             DataLoadedEvent += TSPLSSAPageDataLoadedEventHandler;
-
-            TargetCost = OptimalCost * 1.05d;
         }
 
         private void TSPLSSAPageDataLoadedEventHandler(object sender, EventArgs e) => Bindings.Update();
 
-        private (int, int) RandomPair() => (Random.Next(0, N), Random.Next(0, N));
-
-        private void SwapPair((int, int) switchPair) {
-            int temp = CityOrder[switchPair.Item1];
-            CityOrder[switchPair.Item1] = CityOrder[switchPair.Item2];
-            CityOrder[switchPair.Item2] = temp;
-        }
-
         private async void LocalSearchTSP() {
-            (int, int) switchPair;
-            Cost = TSPCost();
+            Cost = TSPCost(CityOrder);
             double minCost, currentCost;
             List<int> bestNeighbour = new List<int>();
             while (Cost > TargetCost) {
@@ -53,28 +42,28 @@ namespace AIHW {
                 //Switch two
                 for (int i = 0; i < N; i++) {
                     for (int j = i + 1; j < N; j++) {
-                        SwapPair((i, j));
-                        currentCost = TSPCost();
+                        SwapPair(CityOrder, (i, j));
+                        currentCost = TSPCost(CityOrder);
                         if (currentCost < minCost) {
                             minCost = currentCost;
                             bestNeighbour = CityOrder.ToList();
                         }
-                        SwapPair((i, j));
+                        SwapPair(CityOrder, (i, j));
                     }
                 }
                 //Random switch four
                 for (int i = 0; i < N * N; i++) {
                     var switchPair1 = RandomPair();
                     var switchPair2 = RandomPair();
-                    SwapPair(switchPair1);
-                    SwapPair(switchPair2);
-                    currentCost = TSPCost();
+                    SwapPair(CityOrder, switchPair1);
+                    SwapPair(CityOrder, switchPair2);
+                    currentCost = TSPCost(CityOrder);
                     if (currentCost < minCost) {
                         minCost = currentCost;
                         bestNeighbour = CityOrder.ToList();
                     }
-                    SwapPair(switchPair2);
-                    SwapPair(switchPair1);
+                    SwapPair(CityOrder, switchPair2);
+                    SwapPair(CityOrder, switchPair1);
                 }
 
                 //Check Dead End
@@ -85,9 +74,8 @@ namespace AIHW {
                     return;
                 }
 
-                CityOrder.Clear();
                 CityOrder = bestNeighbour.ToList();
-                Cost = TSPCost();
+                Cost = TSPCost(CityOrder);
                 if (DisplayEveryStep) {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                         DisplayRoute(TSPCanvas);
@@ -103,26 +91,19 @@ namespace AIHW {
 
         private async void SimulatedAnnealingLocalSearchTSP() {
             (int, int) switchPair;
-            Cost = TSPCost();
+            Cost = TSPCost(CityOrder);
             Temperature = 200d;
             double deltaCost;
             while (Cost > TargetCost || Temperature >= 1d) {
                 for (int i = 0; Cost > TargetCost && i < 0x0000FFFF; i++) {
                     //SA
-                    Cost = TSPCost();
+                    Cost = TSPCost(CityOrder);
                     switchPair = RandomPair();
-                    SwapPair(switchPair);
+                    SwapPair(CityOrder, switchPair);
 
-                    deltaCost = TSPCost() - Cost;
-                    Console.WriteLine("Cost: %.3f\tT: %.3f\t", Cost, Temperature);
-                    if (deltaCost >= 0) {
-                        Console.WriteLine("P: %.3f\n", Math.Exp(-(deltaCost / Temperature)));
-                    }
-                    else {
-                        Console.WriteLine("\n");
-                    }
+                    deltaCost = TSPCost(CityOrder) - Cost;
                     if (deltaCost >= 0 && (Random.NextDouble() >= Math.Exp(-(deltaCost / Temperature)))) {
-                        SwapPair(switchPair);
+                        SwapPair(CityOrder, switchPair);
                     }
                     if (DisplayEveryStep) {
                         await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
@@ -139,6 +120,7 @@ namespace AIHW {
             }
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 DisplayRoute(TSPCanvas);
+                Bindings.Update();
                 TSPLSResultTextBlock.Text += " Done!";
             });
         }

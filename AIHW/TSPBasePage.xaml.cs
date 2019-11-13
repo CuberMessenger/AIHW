@@ -37,12 +37,20 @@ namespace AIHW {
             Lines = new List<Line>();
         }
 
-        internal double TSPCost() {
+        internal double TSPCost(List<int> cityOrder) {
             double answer = 0d;
             for (int i = 0; i < N; i++) {
-                answer += Adjacency[CityOrder[i], CityOrder[(i + 1) % N]];
+                answer += Adjacency[cityOrder[i], cityOrder[(i + 1) % N]];
             }
             return answer;
+        }
+
+        internal (int, int) RandomPair() => (Random.Next(0, N), Random.Next(0, N));
+
+        internal void SwapPair(List<int> cityOrder, (int, int) switchPair) {
+            int temp = cityOrder[switchPair.Item1];
+            cityOrder[switchPair.Item1] = cityOrder[switchPair.Item2];
+            cityOrder[switchPair.Item2] = temp;
         }
 
         internal void NormalizeCoordinateToCanvas(Canvas canvas) {
@@ -99,11 +107,14 @@ namespace AIHW {
             => Math.Sqrt(Math.Pow(a.Item1 - b.Item1, 2d) + Math.Pow(a.Item2 - b.Item2, 2d));
 
         internal void LoadData(string rawData) {
-            var allraw = rawData.Split("\r\n".ToArray());
+            var allraw = rawData.Split("\r\n");
+            if (allraw.Length == 1) {
+                allraw = allraw[0].Split("\n");
+            }
             var info = allraw[6].Split(" ");
             N = int.Parse(info[0]);
             OptimalCost = double.Parse(info[1]);
-            TargetCost = OptimalCost * 1.01d;
+            TargetCost = OptimalCost * 1.1d;
             Adjacency = new double[N, N];
 
             for (int i = 0; i < N; i++) {
@@ -133,7 +144,7 @@ namespace AIHW {
                             CityOrder.Add(i);
                         }
                         CityOrder.Sort((a, b) => Random.Next(0, 3) - 1);
-                        Cost = TSPCost();
+                        Cost = TSPCost(CityOrder);
                         DisplayRoute(canvas);
                         DataLoadedEvent?.Invoke(this, null);
                     }

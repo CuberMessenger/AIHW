@@ -25,7 +25,26 @@ namespace AIHW {
         }
 
         private List<int> GenerateOffspring(List<int> parent1, List<int> parent2) {
-            return null;
+            int seperateStart = Random.Next(0, N - 1);
+            int seperateEnd = Random.Next(seperateStart + 1, N);
+            List<int> parent2Remains = new List<int>(parent2);
+            List<int> answer = new List<int>();
+            for (int i = seperateStart; i <= seperateEnd; i++) {
+                parent2Remains.Remove(parent1[i]);
+            }
+            for (int i = 0, j = 0; i < N; i++) {
+                if (i >= seperateStart && i <= seperateEnd) {
+                    answer.Add(parent1[i]);
+                }
+                else {
+                    answer.Add(parent2Remains[j++]);
+                }
+            }
+
+            if (Random.NextDouble() < 0.1d) {
+                SwapPair(answer, RandomPair());
+            }
+            return answer;
         }
 
         private int RandomIndexByCost(List<double> scores) {
@@ -41,47 +60,82 @@ namespace AIHW {
             return answer;
         }
 
+        private void LocalSearchTSP() {
+            (int, int) switchPair;
+            Cost = TSPCost(CityOrder);
+            double deltaCost;
+            for (int i = 0; Cost > TargetCost && i < 0x00000FFF; i++) {
+                Cost = TSPCost(CityOrder);
+                switchPair = RandomPair();
+                SwapPair(CityOrder, switchPair);
+
+                deltaCost = TSPCost(CityOrder) - Cost;
+                if (deltaCost >= 0) {
+                    SwapPair(CityOrder, switchPair);
+                }
+            }
+        }
+
+        private async void Display(List<int> bestAnswer, double minCost) {
+            CityOrder = bestAnswer.ToList();
+            Cost = minCost;
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                DisplayRoute(TSPCanvas);
+                Bindings.Update();
+            });
+        }
+
         private async void GeneticAlgorithmTSP() {
+            int PopulationSize = N;
+            int OffspringSize = 2 * N;// PopulationSize * (PopulationSize - 1) / 2;
             Population = new List<List<int>>();
             Offspring = new List<List<int>>();
             CostBuffer = new List<double>();
-            for (int i = 0; i < N; i++) {
-                Population.Add(CityOrder.OrderBy(a => Random.Next(0, 3) - 1).ToList());
+            for (int i = 0; i < PopulationSize; i++) {
+                CityOrder.Sort((a, b) => Random.Next(0, 3) - 1);
+                LocalSearchTSP();
+                Population.Add(new List<int>(CityOrder));
             }
 
             double minCost = Cost, sum;
             List<int> bestAnswer = CityOrder.ToList();
             List<double> scores;
 
-            while (minCost > OptimalCost) {
-                for (int i = 0; i < N; i++) {
-                    CityOrder = Population[i].ToList();
-                    CostBuffer.Add(TSPCost());
+            void UpdateBestAnswer(double cost, List<int> cityOrder) {
+                if (cost < minCost) {
+                    minCost = cost;
+                    bestAnswer = cityOrder.ToList();
+                    Display(bestAnswer, minCost);
                 }
+            }
 
-                if (CostBuffer.Min() < minCost) {
-                    minCost = CostBuffer.Min();
-                    bestAnswer = Population[CostBuffer.IndexOf(minCost)].ToList();
-                }
-
+            void GenerateScores() {
                 sum = CostBuffer.Sum();
-                scores = CostBuffer.GetRange(0, N).ToList();
-                scores.ForEach(x => { x = sum - x; });
-                for (int i = 0; i < N; i++) {
+                scores = CostBuffer.ToList();
+                for (int i = 0; i < scores.Count; i++) {
+                    scores[i] = sum / scores[i];
+                }
+            }
+
+            while (minCost > OptimalCost) {
+                for (int i = 0; i < PopulationSize; i++) {
+                    CostBuffer.Add(TSPCost(Population[i]));
+                    UpdateBestAnswer(CostBuffer.Last(), Population[i]);
+                }
+
+                GenerateScores();
+                for (int i = 0; i < OffspringSize; i++) {
                     var currentOffspring = GenerateOffspring(Population[RandomIndexByCost(scores)], Population[RandomIndexByCost(scores)]);
                     Offspring.Add(currentOffspring);
-
-                    CityOrder = currentOffspring.ToList();
-                    CostBuffer.Add(TSPCost());
+                    CostBuffer.Add(TSPCost(currentOffspring));
+                    UpdateBestAnswer(CostBuffer.Last(), currentOffspring);
                 }
 
-                sum = CostBuffer.Sum();
-                scores = CostBuffer.GetRange(0, 2 * N).ToList();
-                scores.ForEach(x => { x = sum - x; });
+                GenerateScores();
                 var nextPopulation = new List<List<int>>();
-                for (int i = 0, index; i < N; i++) {
+                for (int i = 0, index; i < PopulationSize; i++) {
                     index = RandomIndexByCost(scores);
-                    nextPopulation.Add(index < N ? Population[index].ToList() : Offspring[index % N]);
+                    nextPopulation.Add(index < PopulationSize ? Population[index].ToList() : Offspring[index - PopulationSize]);
                 }
                 Population.Clear();
                 Offspring.Clear();
@@ -95,7 +149,11 @@ namespace AIHW {
                     Bindings.Update();
                 });
             }
-
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                DisplayRoute(TSPCanvas);
+                Bindings.Update();
+                TSPLSResultTextBlock.Text += " Done!";
+            });
         }
 
         private void CalculateButtomClick(object sender, RoutedEventArgs e) => Task.Run(() => GeneticAlgorithmTSP());

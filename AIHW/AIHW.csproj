@@ -192,6 +192,7 @@
   <ItemGroup />
   <ItemGroup>
     <None Include="TSPDataset\a280.tsp" />
+    <None Include="TSPDataset\bays29.tsp" />
     <None Include="TSPDataset\berlin52.tsp" />
     <None Include="TSPDataset\ch150.tsp" />
   </ItemGroup>
