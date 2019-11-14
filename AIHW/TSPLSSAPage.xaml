@@ -53,9 +53,19 @@
                            Margin="20 0"
                            Text="Optimal Cost: " />
 
-                <TextBlock Name="TSPLSOptimalCostTextBlock"
-                           FontSize="24"
+                <TextBlock FontSize="24"
                            Text="{x:Bind OptimalCost, Mode=OneWay}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left">
+                <TextBlock FontSize="24"
+                           Margin="20 0"
+                           Text="Target Cost: " />
+
+                <TextBlock FontSize="24"
+                           Text="{x:Bind TargetCost, Mode=OneWay}"
                            HorizontalAlignment="Center" />
             </StackPanel>
 
@@ -65,7 +75,7 @@
                            Margin="20 0"
                            Text="Cost: " />
 
-                <TextBlock Name="TSPLSResultTextBlock"
+                <TextBlock Name="TSPCostTextBlock"
                            FontSize="24"
                            Text="{x:Bind Cost, Mode=OneWay}"
                            HorizontalAlignment="Center" />

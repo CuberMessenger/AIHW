@@ -69,7 +69,7 @@ namespace AIHW {
                 //Check Dead End
                 if (minCost == Cost) {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                        TSPLSResultTextBlock.Text += " DeadEnd X_X";
+                        TSPCostTextBlock.Text += " DeadEnd X_X";
                     });
                     return;
                 }
@@ -85,7 +85,7 @@ namespace AIHW {
             }
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 DisplayRoute(TSPCanvas);
-                TSPLSResultTextBlock.Text += " Done!";
+                TSPCostTextBlock.Text += " Done!";
             });
         }
 
@@ -121,7 +121,7 @@ namespace AIHW {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 DisplayRoute(TSPCanvas);
                 Bindings.Update();
-                TSPLSResultTextBlock.Text += " Done!";
+                TSPCostTextBlock.Text += " Done!";
             });
         }
 
