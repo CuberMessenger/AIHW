@@ -194,7 +194,9 @@
     <None Include="TSPDataset\a280.tsp" />
     <None Include="TSPDataset\bays29.tsp" />
     <None Include="TSPDataset\berlin52.tsp" />
+    <None Include="TSPDataset\ch130.tsp" />
     <None Include="TSPDataset\ch150.tsp" />
+    <None Include="TSPDataset\eil101.tsp" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

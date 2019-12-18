@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -104,6 +105,21 @@ namespace AIHW {
             Population = new List<List<int>>();
             Offspring = new List<List<int>>();
             CostBuffer = new List<double>();
+            //Thread[] threads = new Thread[5];
+            //for (int t = 0; t < 5; t++) {
+            //    threads[t] = new Thread(() => {
+            //        for (int i = 2 * N * t; i < 2 * N * (t + 1); i++) {
+            //            var temp = new List<int>(CityOrder);
+            //            temp.Sort((a, b) => Random.Next(0, 3) - 1);
+            //            LocalSearchTSP(temp);
+            //            Population.Add(new List<int>(temp));
+            //        }
+            //    });
+            //    threads[t].Start();
+            //}
+            //for (int t = 0; t < 5; t++) {
+            //    threads[t].Join();
+            //}
             for (int i = 0; i < PopulationSize; i++) {
                 CityOrder.Sort((a, b) => Random.Next(0, 3) - 1);
                 LocalSearchTSP();
