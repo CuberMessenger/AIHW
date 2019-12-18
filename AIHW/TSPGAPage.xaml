@@ -29,6 +29,16 @@
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Left">
                 <TextBlock FontSize="24"
+                           Text="Display every step: "
+                           Margin="20 0 8 7" />
+                <ToggleSwitch Name="DisplayEveryStepToggleSwitch"
+                              FontSize="24"
+                              IsOn="{x:Bind DisplayEveryStep, Mode=TwoWay}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left">
+                <TextBlock FontSize="24"
                            Margin="20 0"
                            Text="Optimal Cost: " />
 

@@ -42,11 +42,14 @@ namespace AIHW {
                 }
             }
 
+            //if (Random.NextDouble() < 0.1d) {
+            //    SwapPair(answer, RandomPair());
+            //}
+            //if (Random.NextDouble() < 0.01d) {
+            //    answer.Sort((a, b) => Random.Next(0, 3) - 1);
+            //}
             if (Random.NextDouble() < 0.1d) {
-                SwapPair(answer, RandomPair());
-            }
-            if (Random.NextDouble() < 0.01d) {
-                answer.Sort((a, b) => Random.Next(0, 3) - 1);
+                LocalSearchTSP(answer);
             }
             return answer;
         }
@@ -64,25 +67,40 @@ namespace AIHW {
             return answer;
         }
 
-        private void LocalSearchTSP() {
+        private void LocalSearchTSP(List<int> order = null) {
+            if (order is null) {
+                order = CityOrder;
+            }
             (int, int) switchPair;
-            Cost = TSPCost(CityOrder);
+            Cost = TSPCost(order);
             double deltaCost;
             for (int i = 0; Cost > TargetCost && i < N; i++) {
-                Cost = TSPCost(CityOrder);
+                Cost = TSPCost(order);
                 switchPair = RandomPair();
-                SwapPair(CityOrder, switchPair);
+                SwapPair(order, switchPair);
 
-                deltaCost = TSPCost(CityOrder) - Cost;
+                deltaCost = TSPCost(order) - Cost;
                 if (deltaCost >= 0) {
-                    SwapPair(CityOrder, switchPair);
+                    SwapPair(order, switchPair);
+                }
+            }
+
+            for (int i = 0; i < N * N; i++) {
+                var switchPair1 = RandomPair();
+                var switchPair2 = RandomPair();
+                SwapPair(order, switchPair1);
+                SwapPair(order, switchPair2);
+                deltaCost = TSPCost(order) - Cost;
+                if (deltaCost >= 0) {
+                    SwapPair(order, switchPair2);
+                    SwapPair(order, switchPair1);
                 }
             }
         }
 
         private async void GeneticAlgorithmTSP() {
-            int PopulationSize = N;
-            int OffspringSize = N;
+            int PopulationSize = 10 * N;
+            int OffspringSize = 10 * N;
             Population = new List<List<int>>();
             Offspring = new List<List<int>>();
             CostBuffer = new List<double>();
@@ -107,23 +125,27 @@ namespace AIHW {
             void GenerateScores() {
                 sum = CostBuffer.Sum();
                 scores = new List<double>(CostBuffer);
+                double minValue = scores.Min();
+                double maxValue = scores.Max();
                 for (int i = 0; i < scores.Count; i++) {
-                    scores[i] = 1d / scores[i];
+                    scores[i] = (scores[i] - minValue) / (maxValue - minValue);
+                    scores[i] = 1 - scores[i];
                 }
             }
 
-            while (MinCost > OptimalCost) {
+            while (MinCost > TargetCost) {
                 for (int i = 0; i < PopulationSize; i++) {
                     CityOrder = Population[i];
-                    //LocalSearchTSP();
                     CostBuffer.Add(TSPCost(Population[i]));
                     UpdateBestAnswer(CostBuffer.Last(), Population[i]);
 
                     Cost = TSPCost(CityOrder);
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                        DisplayRoute(TSPCanvas);
-                        Bindings.Update();
-                    });
+                    if (DisplayEveryStep) {
+                        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                            DisplayRoute(TSPCanvas);
+                            Bindings.Update();
+                        });
+                    }
                 }
 
                 GenerateScores();

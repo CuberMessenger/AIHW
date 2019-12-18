@@ -27,6 +27,7 @@ namespace AIHW {
         internal double[,] Adjacency { get; set; }
         internal List<int> CityOrder { get; set; }
         internal List<(double, double)> Coordinate { get; set; }
+        internal bool DisplayEveryStep { get; set; }
 
         public event EventHandler DataLoadedEvent;
 

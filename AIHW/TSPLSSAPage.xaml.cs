@@ -22,7 +22,6 @@ namespace AIHW {
     public sealed partial class TSPLSSAPage : TSPBasePage {
         private bool UseSimulatedAnnealing { get; set; }
         private double Temperature { get; set; }
-        private bool DisplayEveryStep { get; set; }
 
         public TSPLSSAPage() : base() {
             this.InitializeComponent();
