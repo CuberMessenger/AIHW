@@ -188,9 +188,16 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.9</Version>
     </PackageReference>
+    <PackageReference Include="System.Memory">
+      <Version>4.5.3</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <None Include="MNISTDataset\t10k-images.idx3-ubyte" />
+    <None Include="MNISTDataset\t10k-labels.idx1-ubyte" />
+    <None Include="MNISTDataset\train-images.idx3-ubyte" />
+    <None Include="MNISTDataset\train-labels.idx1-ubyte" />
     <None Include="TSPDataset\a280.tsp" />
     <None Include="TSPDataset\bays29.tsp" />
     <None Include="TSPDataset\berlin52.tsp" />
