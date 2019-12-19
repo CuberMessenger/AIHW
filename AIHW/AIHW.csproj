@@ -122,6 +122,7 @@
     <Compile Include="BPNNPage.xaml.cs">
       <DependentUpon>BPNNPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="BPNN\BPNN.cs" />
     <Compile Include="CNNPage.xaml.cs">
       <DependentUpon>CNNPage.xaml</DependentUpon>
     </Compile>
