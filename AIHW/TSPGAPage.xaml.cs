@@ -21,36 +21,60 @@ namespace AIHW {
         private List<List<int>> Population { get; set; }
         private List<List<int>> Offspring { get; set; }
         private List<double> CostBuffer { get; set; }
+        private int PopulationSize { get; set; }
+        private int OffspringSize { get; set; }
         private double MinCost { get; set; }
+        private int Generation { get; set; }
         public TSPGAPage() {
             this.InitializeComponent();
         }
 
         private List<int> GenerateOffspring(List<int> parent1, List<int> parent2) {
-            int seperateStart = Random.Next(0, N - 1);
-            int seperateEnd = Random.Next(seperateStart + 1, N);
-            List<int> parent2Remains = new List<int>(parent2);
             List<int> answer = new List<int>();
-            for (int i = seperateStart; i <= seperateEnd; i++) {
-                parent2Remains.Remove(parent1[i]);
+            if (Random.NextDouble() < 0.5d) {
+                int seperateStart = Random.Next(0, N - 1);
+                int seperateEnd = Random.Next(seperateStart + 1, N);
+                List<int> parent2Remains = new List<int>(parent2);
+                for (int i = seperateStart; i <= seperateEnd; i++) {
+                    parent2Remains.Remove(parent1[i]);
+                }
+                for (int i = 0, j = 0; i < N; i++) {
+                    if (i >= seperateStart && i <= seperateEnd) {
+                        answer.Add(parent1[i]);
+                    }
+                    else {
+                        answer.Add(parent2Remains[j++]);
+                    }
+                }
             }
-            for (int i = 0, j = 0; i < N; i++) {
-                if (i >= seperateStart && i <= seperateEnd) {
-                    answer.Add(parent1[i]);
+            else {
+                int seperateIndex = Random.Next(1, N - 1);
+                answer = new List<int>(parent1);
+                if (Random.NextDouble() < 0.5d) {
+                    for (int i = 0; i < seperateIndex; i++) {
+                        if (answer[i] == parent2[i]) {
+                            continue;
+                        }
+                        else {
+                            SwapPair(answer, (i, answer.IndexOf(parent2[i])));
+                        }
+                    }
                 }
                 else {
-                    answer.Add(parent2Remains[j++]);
+                    for (int i = seperateIndex - 1; i >= 0; i--) {
+                        if (answer[i] == parent2[i]) {
+                            continue;
+                        }
+                        else {
+                            SwapPair(answer, (i, answer.IndexOf(parent2[i])));
+                        }
+                    }
                 }
             }
+            LocalSearchTSP(answer);
 
-            //if (Random.NextDouble() < 0.1d) {
-            //    SwapPair(answer, RandomPair());
-            //}
-            //if (Random.NextDouble() < 0.01d) {
-            //    answer.Sort((a, b) => Random.Next(0, 3) - 1);
-            //}
-            if (Random.NextDouble() < 0.1d) {
-                LocalSearchTSP(answer);
+            if (Random.NextDouble() < 0.2d) {
+                SwapPair(answer, RandomPair());
             }
             return answer;
         }
@@ -72,21 +96,10 @@ namespace AIHW {
             if (order is null) {
                 order = CityOrder;
             }
-            (int, int) switchPair;
-            Cost = TSPCost(order);
             double deltaCost;
-            for (int i = 0; Cost > TargetCost && i < N; i++) {
+
+            for (int i = 0; i < N; i++) {
                 Cost = TSPCost(order);
-                switchPair = RandomPair();
-                SwapPair(order, switchPair);
-
-                deltaCost = TSPCost(order) - Cost;
-                if (deltaCost >= 0) {
-                    SwapPair(order, switchPair);
-                }
-            }
-
-            for (int i = 0; i < N * N; i++) {
                 var switchPair1 = RandomPair();
                 var switchPair2 = RandomPair();
                 SwapPair(order, switchPair1);
@@ -97,32 +110,27 @@ namespace AIHW {
                     SwapPair(order, switchPair1);
                 }
             }
+
+            for (int i = 0; i < N; i++) {
+                Cost = TSPCost(order);
+                var switchPair = RandomPair();
+                SwapPair(order, switchPair);
+                deltaCost = TSPCost(order) - Cost;
+                if (deltaCost >= 0) {
+                    SwapPair(order, switchPair);
+                }
+            }
         }
 
         private async void GeneticAlgorithmTSP() {
-            int PopulationSize = 10 * N;
-            int OffspringSize = 10 * N;
+            PopulationSize = N;
+            OffspringSize = 5 * N;
             Population = new List<List<int>>();
             Offspring = new List<List<int>>();
             CostBuffer = new List<double>();
-            //Thread[] threads = new Thread[5];
-            //for (int t = 0; t < 5; t++) {
-            //    threads[t] = new Thread(() => {
-            //        for (int i = 2 * N * t; i < 2 * N * (t + 1); i++) {
-            //            var temp = new List<int>(CityOrder);
-            //            temp.Sort((a, b) => Random.Next(0, 3) - 1);
-            //            LocalSearchTSP(temp);
-            //            Population.Add(new List<int>(temp));
-            //        }
-            //    });
-            //    threads[t].Start();
-            //}
-            //for (int t = 0; t < 5; t++) {
-            //    threads[t].Join();
-            //}
             for (int i = 0; i < PopulationSize; i++) {
-                CityOrder.Sort((a, b) => Random.Next(0, 3) - 1);
-                LocalSearchTSP();
+                Shuffle(CityOrder);
+                //LocalSearchTSP();
                 Population.Add(new List<int>(CityOrder));
             }
 
@@ -149,7 +157,9 @@ namespace AIHW {
                 }
             }
 
+            Generation = 0;
             while (MinCost > TargetCost) {
+                Generation++;
                 for (int i = 0; i < PopulationSize; i++) {
                     CityOrder = Population[i];
                     CostBuffer.Add(TSPCost(Population[i]));
@@ -178,6 +188,7 @@ namespace AIHW {
                     index = RandomIndexByCost(scores);
                     nextPopulation.Add(index < PopulationSize ? new List<int>(Population[index]) : new List<int>(Offspring[index - PopulationSize]));
                 }
+
                 Population.Clear();
                 Offspring.Clear();
                 CostBuffer.Clear();

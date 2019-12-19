@@ -33,7 +33,8 @@ namespace AIHW {
 
         public TSPBasePage() {
             this.InitializeComponent();
-            this.Random = new Random((int)DateTime.Now.Ticks);
+            this.Random = new Random(2223);
+            //this.Random = new Random((int)DateTime.Now.Ticks);
             Coordinate = new List<(double, double)>();
             Lines = new List<Line>();
         }
@@ -44,6 +45,17 @@ namespace AIHW {
                 answer += Adjacency[cityOrder[i], cityOrder[(i + 1) % N]];
             }
             return answer;
+        }
+
+        internal void Shuffle(List<int> list) {
+            int n = list.Count;
+            while (n > 1) {
+                n--;
+                int k = Random.Next(n + 1);
+                int value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
         }
 
         internal (int, int) RandomPair() => (Random.Next(0, N), Random.Next(0, N));
@@ -144,7 +156,7 @@ namespace AIHW {
                         for (int i = 0; i < N; i++) {
                             CityOrder.Add(i);
                         }
-                        CityOrder.Sort((a, b) => Random.Next(0, 3) - 1);
+                        Shuffle(CityOrder);
                         Cost = TSPCost(CityOrder);
                         DisplayRoute(canvas);
                         DataLoadedEvent?.Invoke(this, null);

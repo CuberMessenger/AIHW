@@ -80,6 +80,18 @@
                            Text="{x:Bind Cost, Mode=OneWay}"
                            HorizontalAlignment="Center" />
             </StackPanel>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left">
+                <TextBlock FontSize="24"
+                           Margin="20 0"
+                           Text="Generation: " />
+
+                <TextBlock Name="GenerationTextBlock"
+                           FontSize="24"
+                           Text="{x:Bind Generation, Mode=OneWay}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
         </StackPanel>
     </Grid>
 </local:TSPBasePage>
