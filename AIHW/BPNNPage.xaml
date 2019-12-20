@@ -101,6 +101,18 @@
             <TextBlock Name="TestTextBlock"
                        FontSize="24" />
 
+            <Button Name="TrainButton"
+                    HorizontalAlignment="Center"
+                    Click="TrainButtonClick"
+                    Content="Train"
+                    FontSize="24" />
+
+            <Button Name="TestButton"
+                    HorizontalAlignment="Center"
+                    Click="TestButtonClick"
+                    Content="Test"
+                    FontSize="24" />
+
         </StackPanel>
 
     </Grid>

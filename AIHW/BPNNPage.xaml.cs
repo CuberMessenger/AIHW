@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using AIHW.BPNN;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -24,11 +25,12 @@ namespace AIHW {
     /// </summary>
     public sealed partial class BPNNPage : Page {
         private float[,,] TrainData { get; set; }
-        private float[] TrainLabel { get; set; }
+        private int[] TrainLabel { get; set; }
         private float[,,] TestData { get; set; }
-        private float[] TestLabel { get; set; }
+        private int[] TestLabel { get; set; }
         private Random Random { get; set; }
         private Rectangle[,] Rectangles { get; set; }
+        private BackPropagationNeuralNetwork BackPropagationNeuralNetwork { get; set; }
 
         private static SolidColorBrush BlackBrush = new SolidColorBrush(Windows.UI.Colors.Black);
         private static SolidColorBrush WhiteBrush = new SolidColorBrush(Windows.UI.Colors.White);
@@ -45,9 +47,13 @@ namespace AIHW {
                     Rectangles[r, c].SetValue(Grid.ColumnProperty, c);
                 }
             }
+
+            var networkShape = new int[] { 28 * 28, 32, 10 };
+            var epoch = 2;
+            var learnRate = 0.0001f;
+
+            BackPropagationNeuralNetwork = new BackPropagationNeuralNetwork(networkShape, epoch, learnRate);
         }
-
-
 
         private void ParseData(Stream trainDataStream, Stream trainLabelStream, Stream testDataStream, Stream testLabelStream) {
             if (trainDataStream != null) {
@@ -77,7 +83,7 @@ namespace AIHW {
                     trainLabelStream.Read(buffer, 0, 4);
                     trainLabelStream.Read(buffer, 0, 4);
                     int numOfImage = BinaryPrimitives.ReadInt32BigEndian(buffer);
-                    TrainLabel = new float[numOfImage];
+                    TrainLabel = new int[numOfImage];
                     for (int i = 0; i < numOfImage; i++) {
                         TrainLabel[i] = reader.ReadByte();
                     }
@@ -111,7 +117,7 @@ namespace AIHW {
                     testLabelStream.Read(buffer, 0, 4);
                     testLabelStream.Read(buffer, 0, 4);
                     int numOfImage = BinaryPrimitives.ReadInt32BigEndian(buffer);
-                    TestLabel = new float[numOfImage];
+                    TestLabel = new int[numOfImage];
                     for (int i = 0; i < numOfImage; i++) {
                         TestLabel[i] = reader.ReadByte();
                     }
@@ -138,7 +144,7 @@ namespace AIHW {
                         }
                     }
                 }
-                TestTextBlock.Text = "Done";
+                TestTextBlock.Text = "Load Done";
             }
         }
 
@@ -151,13 +157,22 @@ namespace AIHW {
         }
 
         private void NextButtonClick(object sender, RoutedEventArgs e) {
-
             int i = Random.Next(0, 60000);
             for (int r = 0; r < 28; r++) {
                 for (int c = 0; c < 28; c++) {
                     Rectangles[r, c].Fill = TrainData[i, r, c] == 0 ? BlackBrush : WhiteBrush;
                 }
             }
+        }
+
+        private void TrainButtonClick(object sender, RoutedEventArgs e) {
+            var losses = BackPropagationNeuralNetwork.Train(TrainData, TrainLabel);
+            TestTextBlock.Text = "Train Done!";
+        }
+
+        private void TestButtonClick(object sender, RoutedEventArgs e) {
+            var accuracy = BackPropagationNeuralNetwork.Test(TestData, TestLabel);
+            TestTextBlock.Text = $"Test Done!\nAccuracy = {accuracy}";
         }
     }
 }
