@@ -185,7 +185,7 @@ namespace AIHW.BPNN {
 
                     if (instanceIndex % 1000 == 0) {
                         await coreDispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                            textBlock.Text = $"Epoch: {e}, Loss: {Losses[e]}";
+                            textBlock.Text = $"Epoch: {e}, Loss: {Losses[e] / instanceIndex}";
                         });
                     }
                 }

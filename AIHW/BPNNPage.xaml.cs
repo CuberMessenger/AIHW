@@ -207,14 +207,28 @@ namespace AIHW {
             var array = buffer.ToArray();
             float[,] input = new float[28, 28];
 
+            int maxValue = int.MinValue;
+            int minValue = int.MaxValue;
             for (int r = 0; r < 28; r++) {
                 for (int c = 0; c < 28; c++) {
                     int sum = 0;
                     for (int i = 0; i < 4; i++) {
                         sum += array[(r * 28 + c) * 4 + i];
                     }
-                    input[r, c] = (float)sum;
+                    input[r, c] = sum;
+                    if (sum > maxValue) {
+                        maxValue = sum;
+                    }
+                    if (sum < minValue) {
+                        minValue = sum;
+                    }
                     //Rectangles[r, c].Fill = sum == 0 ? BlackBrush : WhiteBrush;
+                }
+            }
+
+            for (int r = 0; r < 28; r++) {
+                for (int c = 0; c < 28; c++) {
+                    input[r, c] = (input[r, c] - minValue) / (maxValue - minValue);
                 }
             }
 
