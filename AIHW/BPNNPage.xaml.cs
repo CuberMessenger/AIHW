@@ -61,8 +61,8 @@ namespace AIHW {
             }
 
             var networkShape = new int[] { 28 * 28, 32, 10 };
-            var epoch = 20;
-            var learnRate = 0.01f;
+            var epoch = 5;
+            var learnRate = 0.02f;
             TestIndex = 0;
 
             BackPropagationNeuralNetwork = new BackPropagationNeuralNetwork(networkShape, epoch, learnRate);
@@ -173,7 +173,7 @@ namespace AIHW {
         private void NextButtonClick(object sender, RoutedEventArgs e) {
             for (int r = 0; r < 28; r++) {
                 for (int c = 0; c < 28; c++) {
-                    Rectangles[r, c].Fill = TestData[TestIndex, r, c] == 0 ? BlackBrush : WhiteBrush;
+                    Rectangles[r, c].Fill = TestData[TestIndex, r, c] == 0 ? WhiteBrush : BlackBrush;
                 }
             }
             int output = BackPropagationNeuralNetwork.TestOne(TestData, TestIndex);

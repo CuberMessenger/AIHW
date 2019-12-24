@@ -159,8 +159,8 @@ namespace AIHW.BPNN {
 
         internal async void Train(float[,,] trainData, int[] trainLabel, CoreDispatcher coreDispatcher, TextBlock textBlock) {
             float[] delta = new float[Layers.Last().NumOfNodes];
-            int numOfInstance = 10000;
-            //int numOfInstance = trainData.GetLength(0);
+            //int numOfInstance = 10000;
+            int numOfInstance = trainData.GetLength(0);
             for (int e = 0; e < Epoch; e++) {
                 for (int instanceIndex = 0; instanceIndex < numOfInstance; instanceIndex++) {
                     SetInput(trainData, instanceIndex, Layers.First());
@@ -182,10 +182,13 @@ namespace AIHW.BPNN {
                     for (int i = Layers.Length - 2; i > 0; i--) {
                         Layers[i].Backward();
                     }
+
+                    if (instanceIndex % 1000 == 0) {
+                        await coreDispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+                            textBlock.Text = $"Epoch: {e}, Loss: {Losses[e]}";
+                        });
+                    }
                 }
-                await coreDispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                    textBlock.Text = $"Epoch: {e}, Loss: {Losses[e]}";
-                });
             }
             await coreDispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 textBlock.Text = $"TrainDone Loss: {Losses.Last()}";

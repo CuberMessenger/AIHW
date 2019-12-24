@@ -24,7 +24,9 @@
                     Orientation="Horizontal">
             <Grid Name="ImageGrid"
                   Width="280"
-                  Height="280">
+                  Height="280"
+                  BorderBrush="Gray"
+                  BorderThickness="5">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
@@ -145,8 +147,8 @@
                     <Button Name="PredictFromInkButton"
                             Content="Predict"
                             Width="100"
-                            FontSize="24" 
-                            Click="PredictFromInkButtonClick"/>
+                            FontSize="24"
+                            Click="PredictFromInkButtonClick" />
                 </StackPanel>
             </StackPanel>
         </StackPanel>
