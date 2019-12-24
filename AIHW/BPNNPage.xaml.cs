@@ -17,6 +17,11 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using AIHW.BPNN;
 using System.Threading;
+using Windows.UI.Core;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.Storage.Streams;
+using Windows.Graphics.Imaging;
+using Windows.Graphics.Display;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -31,6 +36,7 @@ namespace AIHW {
         private int[] TestLabel { get; set; }
         private Random Random { get; set; }
         private Rectangle[,] Rectangles { get; set; }
+        private int TestIndex { get; set; }
         private BackPropagationNeuralNetwork BackPropagationNeuralNetwork { get; set; }
 
         private static SolidColorBrush BlackBrush = new SolidColorBrush(Windows.UI.Colors.Black);
@@ -38,6 +44,11 @@ namespace AIHW {
 
         public BPNNPage() {
             this.InitializeComponent();
+            InkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
+            var defaultAttributes = InkCanvas.InkPresenter.CopyDefaultDrawingAttributes();
+            defaultAttributes.Size = new Size(25d, 25d);
+            InkCanvas.InkPresenter.UpdateDefaultDrawingAttributes(defaultAttributes);
+
             Random = new Random();
             Rectangles = new Rectangle[28, 28];
             for (int r = 0; r < 28; r++) {
@@ -50,8 +61,9 @@ namespace AIHW {
             }
 
             var networkShape = new int[] { 28 * 28, 32, 10 };
-            var epoch = 50;
-            var learnRate = 0.001f;
+            var epoch = 20;
+            var learnRate = 0.01f;
+            TestIndex = 0;
 
             BackPropagationNeuralNetwork = new BackPropagationNeuralNetwork(networkShape, epoch, learnRate);
         }
@@ -145,7 +157,8 @@ namespace AIHW {
                         }
                     }
                 }
-                TestTextBlock.Text = "Load Done";
+                TestTextBlock.Text = "Load Data Done";
+                TrainButton.IsEnabled = true;
             }
         }
 
@@ -158,23 +171,55 @@ namespace AIHW {
         }
 
         private void NextButtonClick(object sender, RoutedEventArgs e) {
-            int i = Random.Next(0, 60000);
             for (int r = 0; r < 28; r++) {
                 for (int c = 0; c < 28; c++) {
-                    Rectangles[r, c].Fill = TrainData[i, r, c] == 0 ? BlackBrush : WhiteBrush;
+                    Rectangles[r, c].Fill = TestData[TestIndex, r, c] == 0 ? BlackBrush : WhiteBrush;
                 }
             }
+            int output = BackPropagationNeuralNetwork.TestOne(TestData, TestIndex);
+            GroundTruthTextBlock.Text = TestLabel[TestIndex].ToString();
+            PredictTextBlock.Text = output.ToString();
+            TestIndex++;
         }
 
         private async void TrainButtonClick(object sender, RoutedEventArgs e) {
             BackPropagationNeuralNetwork.Train(TrainData, TrainLabel, Dispatcher, TestTextBlock);
-
-            //TestTextBlock.Text = "Train Done!";
+            TestButton.IsEnabled = true;
+            NextButton.IsEnabled = true;
         }
 
         private void TestButtonClick(object sender, RoutedEventArgs e) {
             var accuracy = BackPropagationNeuralNetwork.Test(TestData, TestLabel);
             TestTextBlock.Text = $"Test Done!\nAccuracy = {accuracy}";
+        }
+
+        private void ClearInkCanvasButtonClick(object sender, RoutedEventArgs e) {
+            InkCanvas.InkPresenter.StrokeContainer.Clear();
+            PredictFromInkTextBlock.Text = "";
+        }
+
+        private async void PredictFromInkButtonClick(object sender, RoutedEventArgs e) {
+            RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap();
+            await renderTargetBitmap.RenderAsync(InkCanvas, 28, 28);
+
+            var buffer = await renderTargetBitmap.GetPixelsAsync();
+
+            var array = buffer.ToArray();
+            float[,] input = new float[28, 28];
+
+            for (int r = 0; r < 28; r++) {
+                for (int c = 0; c < 28; c++) {
+                    int sum = 0;
+                    for (int i = 0; i < 4; i++) {
+                        sum += array[(r * 28 + c) * 4 + i];
+                    }
+                    input[r, c] = (float)sum;
+                    //Rectangles[r, c].Fill = sum == 0 ? BlackBrush : WhiteBrush;
+                }
+            }
+
+            int output = BackPropagationNeuralNetwork.TestOne(input);
+            PredictFromInkTextBlock.Text = output.ToString();
         }
     }
 }

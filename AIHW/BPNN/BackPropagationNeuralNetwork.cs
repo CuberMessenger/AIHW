@@ -188,7 +188,7 @@ namespace AIHW.BPNN {
                 });
             }
             await coreDispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                textBlock.Text = "TrainDone";
+                textBlock.Text = $"TrainDone Loss: {Losses.Last()}";
             });
         }
 
@@ -196,15 +196,38 @@ namespace AIHW.BPNN {
             float accuracy = 0f;
             int numOfInstance = testData.GetLength(0);
             for (int instanceIndex = 0; instanceIndex < numOfInstance; instanceIndex++) {
-                SetInput(testData, instanceIndex, Layers.First());
-                for (int i = 1; i < Layers.Length; i++) {
-                    Layers[i].Forward();
-                }
-                var output = Layers.Last().Outputs.ToList();
-                accuracy += output.IndexOf(output.Max()) == testLabel[instanceIndex] ? 1f : 0f;
+                accuracy += TestOne(testData, instanceIndex) == testLabel[instanceIndex] ? 1f : 0f;
             }
             accuracy /= numOfInstance;
             return accuracy;
+        }
+
+        internal int TestOne(float[,,] testData, int instanceIndex) {
+            SetInput(testData, instanceIndex, Layers.First());
+            for (int i = 1; i < Layers.Length; i++) {
+                Layers[i].Forward();
+            }
+            var output = Layers.Last().Outputs.ToList();
+            return output.IndexOf(output.Max());
+        }
+
+        internal int TestOne(float[,] data) {
+            var layer = Layers.First();
+            int sideLength = data.GetLength(1);
+            for (int i = 0, r = 0, c = 0; i < layer.NumOfNodes; i++) {
+                layer.Outputs[i] = data[r, c];
+                c++;
+                if (c == sideLength) {
+                    c = 0;
+                    r++;
+                }
+            }
+
+            for (int i = 1; i < Layers.Length; i++) {
+                Layers[i].Forward();
+            }
+            var output = Layers.Last().Outputs.ToList();
+            return output.IndexOf(output.Max());
         }
     }
 }
