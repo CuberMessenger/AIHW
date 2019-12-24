@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using AIHW.BPNN;
+using System.Threading;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -49,8 +50,8 @@ namespace AIHW {
             }
 
             var networkShape = new int[] { 28 * 28, 32, 10 };
-            var epoch = 2;
-            var learnRate = 0.0001f;
+            var epoch = 50;
+            var learnRate = 0.001f;
 
             BackPropagationNeuralNetwork = new BackPropagationNeuralNetwork(networkShape, epoch, learnRate);
         }
@@ -70,7 +71,7 @@ namespace AIHW {
                     for (int i = 0; i < numOfImage; i++) {
                         for (int r = 0; r < numOfRow; r++) {
                             for (int c = 0; c < numOfColumn; c++) {
-                                TrainData[i, r, c] = reader.ReadByte();
+                                TrainData[i, r, c] = reader.ReadByte() / 255f;
                             }
                         }
                     }
@@ -104,7 +105,7 @@ namespace AIHW {
                     for (int i = 0; i < numOfImage; i++) {
                         for (int r = 0; r < numOfRow; r++) {
                             for (int c = 0; c < numOfColumn; c++) {
-                                TestData[i, r, c] = reader.ReadByte();
+                                TestData[i, r, c] = reader.ReadByte() / 255f;
                             }
                         }
                     }
@@ -165,9 +166,10 @@ namespace AIHW {
             }
         }
 
-        private void TrainButtonClick(object sender, RoutedEventArgs e) {
-            var losses = BackPropagationNeuralNetwork.Train(TrainData, TrainLabel);
-            TestTextBlock.Text = "Train Done!";
+        private async void TrainButtonClick(object sender, RoutedEventArgs e) {
+            BackPropagationNeuralNetwork.Train(TrainData, TrainLabel, Dispatcher, TestTextBlock);
+
+            //TestTextBlock.Text = "Train Done!";
         }
 
         private void TestButtonClick(object sender, RoutedEventArgs e) {
