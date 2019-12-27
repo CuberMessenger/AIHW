@@ -136,6 +136,16 @@ namespace AIHW.BPNN {
         }
 
         internal BackPropagationNeuralNetwork(int[] networkShape, int epoch, float learnRate) {
+            Epoch = epoch;
+            LearnRate = learnRate;
+            Losses = new float[epoch];
+            for (int i = 0; i < epoch; i++) {
+                Losses[i] = 0f;
+            }
+
+            LossFunction = CrossEntropy;
+            LossFunctionDerivative = CrossEntropyDerivative;
+
             Layers = new FullyConnectedNeuralLayer[networkShape.Length];
             Layers[0] = new FullyConnectedNeuralLayer(networkShape[0], 0, this);
             for (int i = 1; i < networkShape.Length - 1; i++) {
@@ -149,15 +159,6 @@ namespace AIHW.BPNN {
                 Layers[i].PreviousLayer = Layers[i - 1];
                 Layers[i].NextLayer = Layers[i + 1];
             }
-            Epoch = epoch;
-            LearnRate = learnRate;
-            Losses = new float[epoch];
-            for (int i = 0; i < epoch; i++) {
-                Losses[i] = 0f;
-            }
-
-            LossFunction = CrossEntropy;
-            LossFunctionDerivative = CrossEntropyDerivative;
         }
 
         internal void SetInput(float[,,] data, int instanceIndex, FullyConnectedNeuralLayer layer) {
