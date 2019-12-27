@@ -87,9 +87,9 @@ namespace AIHW.BPNN {
                 }
                 Errors[n] *= ActivationDerivative(Outputs[n]);
 
-                Biases[n] += CurrentNetwork.LearnRate * Errors[n];
+                Biases[n] -= CurrentNetwork.LearnRate * Errors[n];
                 for (int i = 0; i < NumOfWeights; i++) {
-                    Weights[n, i] += CurrentNetwork.LearnRate * Errors[n] * PreviousLayer.Outputs[i];
+                    Weights[n, i] -= CurrentNetwork.LearnRate * Errors[n] * PreviousLayer.Outputs[i];
                 }
             }
         }
@@ -98,9 +98,9 @@ namespace AIHW.BPNN {
             for (int n = 0; n < NumOfNodes; n++) {
                 Errors[n] = delta[n] * SigmoidDerivative(Outputs[n]);
 
-                Biases[n] += CurrentNetwork.LearnRate * Errors[n];
+                Biases[n] -= CurrentNetwork.LearnRate * Errors[n];
                 for (int i = 0; i < NumOfWeights; i++) {
-                    Weights[n, i] += CurrentNetwork.LearnRate * Errors[n] * PreviousLayer.Outputs[i];
+                    Weights[n, i] -= CurrentNetwork.LearnRate * Errors[n] * PreviousLayer.Outputs[i];
                 }
             }
         }
@@ -112,11 +112,25 @@ namespace AIHW.BPNN {
         internal float[] Losses { get; set; }
         internal FullyConnectedNeuralLayer[] Layers { get; set; }
         internal Func<float[], int, float[]> LossFunction { get; set; }
+        internal Func<float[], int, float[]> LossFunctionDerivative { get; set; }
 
         internal static float[] CrossEntropy(float[] outputs, int target) {
             float[] answer = new float[outputs.Length];
             for (int i = 0; i < outputs.Length; i++) {
                 answer[i] = (float)(target == i ? -Math.Log(outputs[i] + 0.0001f) : -Math.Log(1f - outputs[i] + 0.0001f));
+            }
+            return answer;
+        }
+
+        internal static float[] CrossEntropyDerivative(float[] outputs, int target) {
+            float[] answer = new float[outputs.Length];
+            for (int i = 0; i < answer.Length; i++) {
+                if (target == i) {
+                    answer[i] = -1f / (outputs[i] + 0.0001f);
+                }
+                else {
+                    answer[i] = 1f / (1f - outputs[i] + 0.0001f);
+                }
             }
             return answer;
         }
@@ -143,6 +157,7 @@ namespace AIHW.BPNN {
             }
 
             LossFunction = CrossEntropy;
+            LossFunctionDerivative = CrossEntropyDerivative;
         }
 
         internal void SetInput(float[,,] data, int instanceIndex, FullyConnectedNeuralLayer layer) {
@@ -158,7 +173,7 @@ namespace AIHW.BPNN {
         }
 
         internal async void Train(float[,,] trainData, int[] trainLabel, CoreDispatcher coreDispatcher, TextBlock textBlock) {
-            float[] delta = new float[Layers.Last().NumOfNodes];
+            float[] delta = null;
             //int numOfInstance = 10000;
             int numOfInstance = trainData.GetLength(0);
             for (int e = 0; e < Epoch; e++) {
@@ -173,9 +188,7 @@ namespace AIHW.BPNN {
                     var loss = LossFunction(Layers.Last().Outputs, trainLabel[instanceIndex]);
                     Losses[e] += loss.Average();
 
-                    for (int i = 0; i < delta.Length; i++) {
-                        delta[i] = trainLabel[instanceIndex] == i ? 1f - Layers.Last().Outputs[i] : -Layers.Last().Outputs[i];
-                    }
+                    delta = LossFunctionDerivative(Layers.Last().Outputs, trainLabel[instanceIndex]);
 
                     //Backward
                     Layers.Last().OutputLayerBackward(delta);
@@ -191,7 +204,7 @@ namespace AIHW.BPNN {
                 }
             }
             await coreDispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                textBlock.Text = $"TrainDone Loss: {Losses.Last()}";
+                textBlock.Text = $"TrainDone Loss: {Losses.Last() / numOfInstance}";
             });
         }
 
