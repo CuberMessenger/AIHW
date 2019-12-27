@@ -126,6 +126,7 @@
     <Compile Include="CNNPage.xaml.cs">
       <DependentUpon>CNNPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CNN\ConvolutionalNeuralNetwork.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

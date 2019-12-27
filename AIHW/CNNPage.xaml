@@ -9,7 +9,200 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <TextBlock Text="CNN!"
-                   FontSize="48" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0"
+                    Grid.Column="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+            <Grid Name="ImageGrid"
+                  Width="280"
+                  Height="280"
+                  BorderBrush="Gray"
+                  BorderThickness="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+            </Grid>
+
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal"
+                            Margin="20">
+                    <TextBlock Text="GroundTruth: "
+                               FontSize="24" />
+                    <TextBlock Name="GroundTruthTextBlock"
+                               FontSize="24" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            Margin="20">
+                    <TextBlock Text="Predict: "
+                               FontSize="24" />
+                    <TextBlock Name="PredictTextBlock"
+                               FontSize="24" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1"
+                    Grid.Column="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+
+            <Image x:Name="RenderedImage"
+                   Stretch="None" />
+            <Border BorderBrush="Gray"
+                    BorderThickness="5">
+                <InkCanvas Name="InkCanvas"
+                           Width="280"
+                           Height="280" />
+            </Border>
+
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal"
+                            Margin="20">
+                    <TextBlock Text="Predict: "
+                               FontSize="24" />
+
+                    <TextBlock Name="PredictFromInkTextBlock"
+                               FontSize="24" />
+
+                </StackPanel>
+                <StackPanel Orientation="Horizontal"
+                            Margin="20">
+                    <Button Name="ClearInkCanvasButton"
+                            Content="Clear"
+                            FontSize="24"
+                            Width="100"
+                            Click="ClearInkCanvasButtonClick" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            Margin="20">
+                    <Button Name="PredictFromInkButton"
+                            Content="Predict"
+                            Width="100"
+                            FontSize="24"
+                            Click="PredictFromInkButtonClick" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Grid.Column="1"
+                Background="AliceBlue">
+            <TextBlock Text="Drop Data Here!"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="40"
+                       Padding="20 200"
+                       AllowDrop="True"
+                       Drop="GridDropAsync"
+                       DragOver="GridDragOver" />
+        </Border>
+
+        <StackPanel Grid.Row="0"
+                    Grid.Column="1"
+                    Orientation="Vertical">
+            <Button Name="TrainButton"
+                    Height="50"
+                    Width="80"
+                    Margin="0 10"
+                    IsEnabled="False"
+                    HorizontalAlignment="Center"
+                    Click=""
+                    Content="Train"
+                    FontSize="24" />
+
+            <Button Name="TestButton"
+                    Height="50"
+                    Width="80"
+                    Margin="0 10"
+                    IsEnabled="False"
+                    HorizontalAlignment="Center"
+                    Click="TestButtonClick"
+                    Content="Test"
+                    FontSize="24" />
+
+            <Button Name="NextButton"
+                    Height="50"
+                    Width="80"
+                    Margin="0 10"
+                    IsEnabled="False"
+                    HorizontalAlignment="Center"
+                    Click="NextButtonClick"
+                    Content="Next"
+                    FontSize="24" />
+
+            <TextBlock Name="TestTextBlock"
+                       FontSize="24" />
+        </StackPanel>
+
     </Grid>
 </Page>
