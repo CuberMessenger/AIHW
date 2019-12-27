@@ -7,13 +7,18 @@ using System.Threading.Tasks;
 namespace AIHW.CNN {
     class ConvolutionalLayer {
         internal int NumOfKernal { get; set; }
-        internal (int, int, int) KernalSize { get; set; }
-        internal (int, int, int) InputSize { get; set; }
-        internal (int, int, int) OutputSize { get; set; }
+        internal (int, int, int) KernalShape { get; set; }
+        internal (int, int, int) InputShape { get; set; }
+        internal (int, int, int) OutputShape { get; set; }
+        internal (int, int) PaddingShape { get; set; }
         internal float[][,,] Kernals { get; set; }
-        internal float[,,] Biases { get; set; }
+        internal float[][,,] DeltaKernals { get; set; }
+        internal float[] Biases { get; set; }
+        internal float[] DeltaBiases { get; set; }
         internal float[,,] Input { get; set; }
+        internal float[,,] DeltaInput { get; set; }
         internal float[,,] FeatureMap { get; set; }
+        internal float[,,] DeltaFeatureMap { get; set; }
         internal Func<float, float> ActivationFunction { get; set; }
         internal Func<float, float> ActivationDerivative { get; set; }
 
@@ -26,34 +31,38 @@ namespace AIHW.CNN {
         internal static float Sigmoid(float x) => 1f / (1f + (float)Math.Exp(-x));
         internal static float SigmoidDerivative(float sigmoid) => sigmoid * (1f - sigmoid);
 
-        internal ConvolutionalLayer(int numOfKernal, (int, int) kernalSize, (int, int, int) inputSize) {
+        internal ConvolutionalLayer(int numOfKernal, (int, int) kernalShape, (int, int, int) inputShape) {
             NumOfKernal = numOfKernal;
-            KernalSize = (kernalSize.Item1, kernalSize.Item2, inputSize.Item3);
-            InputSize = inputSize;
+            KernalShape = (inputShape.Item1, kernalShape.Item1, kernalShape.Item2);//[Channel, Height, Width]
+            PaddingShape = ((KernalShape.Item2 - 1) / 2, (KernalShape.Item3 - 1) / 2);// 3x3 kernal -> (1, 1)
+            InputShape = inputShape;
+            OutputShape = (NumOfKernal, InputShape.Item2 - 2 * PaddingShape.Item1, InputShape.Item3 - 2 * PaddingShape.Item2);
 
-            Kernals = new float[numOfKernal][,,];
-            for (int i = 0; i < numOfKernal; i++) {
-                Kernals[i] = new float[kernalSize.Item1, kernalSize.Item2, inputSize.Item3];
-                for (int r = 0; r < kernalSize.Item1; r++) {
-                    for (int c = 0; c < kernalSize.Item2; c++) {
-                        for (int ch = 0; ch < inputSize.Item3; ch++) {
-                            Kernals[i][r, c, ch] = RandomFloat();
+            Kernals = new float[NumOfKernal][,,];
+            DeltaKernals = new float[NumOfKernal][,,];
+            for (int k = 0; k < numOfKernal; k++) {
+                Kernals[k] = new float[KernalShape.Item1, KernalShape.Item2, KernalShape.Item3];
+                DeltaKernals[k] = new float[KernalShape.Item1, KernalShape.Item2, KernalShape.Item3];
+                for (int ch = 0; ch < KernalShape.Item1; ch++) {
+                    for (int r = 0; r < KernalShape.Item2; r++) {
+                        for (int c = 0; c < KernalShape.Item3; c++) {
+                            Kernals[k][ch, r, c] = RandomFloat();
                         }
                     }
                 }
             }
 
-            OutputSize = (inputSize.Item1 - kernalSize.Item1 + 1, inputSize.Item2 - kernalSize.Item2 + 1, numOfKernal);
-
-            FeatureMap = new float[OutputSize.Item1, OutputSize.Item2, numOfKernal];
-            Biases = new float[OutputSize.Item1, OutputSize.Item2, numOfKernal];
-            for (int r = 0; r < OutputSize.Item1; r++) {
-                for (int c = 0; c < OutputSize.Item2; c++) {
-                    for (int ch = 0; ch < numOfKernal; ch++) {
-                        Biases[r, c, ch] = RandomFloat();
-                    }
-                }
+            Biases = new float[numOfKernal];
+            DeltaBiases = new float[numOfKernal];
+            for (int k = 0; k < numOfKernal; k++) {
+                Biases[k] = RandomFloat();
             }
+
+            Input = new float[InputShape.Item1, InputShape.Item2, InputShape.Item3];
+            DeltaInput = new float[InputShape.Item1, InputShape.Item2, InputShape.Item3];
+
+            FeatureMap = new float[OutputShape.Item1, OutputShape.Item2, OutputShape.Item3];
+            DeltaFeatureMap = new float[OutputShape.Item1, OutputShape.Item2, OutputShape.Item3];
 
             ActivationFunction = ReLu;
             ActivationDerivative = ReLuDerivative;
@@ -61,86 +70,123 @@ namespace AIHW.CNN {
 
         internal float Convolution(float[,,] input, float[,,] kernal, int startRow, int startColumn, int channel) {
             float answer = 0f;
-            for (int r = startRow; r < startRow + KernalSize.Item1; r++) {
-                for (int c = startColumn; c < startColumn + KernalSize.Item2; c++) {
-                    answer += input[r, c, channel] * kernal[r - startRow, c - startColumn, channel];
+            for (int r = startRow; r < startRow + KernalShape.Item1; r++) {
+                for (int c = startColumn; c < startColumn + KernalShape.Item2; c++) {
+                    answer += input[channel, r, c] * kernal[channel, r - startRow, c - startColumn];
                 }
             }
             return answer;
         }
 
-        internal float[,,] FullyConvolution(float[,,] input, float[,,] kernal) {
-            var kernalSize = (kernal.GetLength(0), kernal.GetLength(1), kernal.GetLength(2));
-            var rotatedKernel = new float[kernalSize.Item1, kernalSize.Item2, kernalSize.Item3];
-            for (int k = 0; k < kernalSize.Item3; k++) {
-                for (int r = 0; r < kernalSize.Item1; r++) {
-                    for (int c = 0; c < kernalSize.Item2; c++) {
-                        rotatedKernel[r, c, k] = kernal[kernalSize.Item1 - 1 - r, kernalSize.Item2 - 1 - c, k];
+        internal void FullyConvolution(float[,,] input, float[,,] kernal, float[,,] answer, int indexOfInput) {
+            //input is un-padded DeltaDeatureMap
+            //kernal is current Kernal
+            //answer is DeltaInput
+            var kernalShape = (kernal.GetLength(0), kernal.GetLength(1), kernal.GetLength(2));
+            var rotatedKernel = new float[kernalShape.Item1, kernalShape.Item2, kernalShape.Item3];
+            for (int ch = 0; ch < kernalShape.Item1; ch++) {
+                for (int r = 0; r < kernalShape.Item2; r++) {
+                    for (int c = 0; c < kernalShape.Item3; c++) {
+                        rotatedKernel[ch, r, c] = kernal[ch, kernalShape.Item2 - 1 - r, kernalShape.Item3 - 1 - c];
                     }
                 }
             }
 
-            var paddedInput =
-                new float[input.GetLength(0) + kernalSize.Item1 - 1, input.GetLength(1) + kernalSize.Item2 - 1, input.GetLength(2)];
-            for (int k = 0; k < input.GetLength(2); k++) {
-                for (int r = 0; r < paddedInput.GetLength(0); r++) {
-                    for (int c = 0; c < paddedInput.GetLength(1); c++) {
-                        if (r == 0 || c == 0 || r == paddedInput.GetLength(0) - 1 || c == paddedInput.GetLength(1) - 1) {
-                            paddedInput[r, c, k] = 0f;
+            var paddingShape = ((kernalShape.Item2 - 1) / 2, (kernalShape.Item3 - 1) / 2);
+            var inputShape = (input.GetLength(0), input.GetLength(1), input.GetLength(2));
+            var paddedInput = new float[inputShape.Item2 + 2 * paddingShape.Item1, inputShape.Item3 + 2 * paddingShape.Item2];
+            for (int r = 0; r < paddedInput.GetLength(1); r++) {
+                for (int c = 0; c < paddedInput.GetLength(2); c++) {
+                    if (r == 0 || c == 0 || r == paddedInput.GetLength(1) - 1 || c == paddedInput.GetLength(2) - 1) {
+                        paddedInput[r, c] = 0f;
+                    }
+                    else {
+                        paddedInput[r, c] = input[indexOfInput, r + paddingShape.Item1, c + paddingShape.Item2];
+                    }
+                }
+            }
+
+            for (int ch = 0; ch < InputShape.Item1; ch++) {
+                for (int r = 0; r < InputShape.Item2; r++) {
+                    for (int c = 0; c < InputShape.Item3; c++) {
+                        for (int kr = 0; kr < kernalShape.Item2; kr++) {
+                            for (int kc = 0; kc < kernalShape.Item3; kc++) {
+                                answer[ch, r, c] += paddedInput[r + kr, c + kc] * kernal[indexOfInput, kr, kc];
+                            }
                         }
-                        else {
-                            paddedInput[r, c, k] = input[r + (kernalSize.Item1 - 1) / 2, c + (kernalSize.Item2 - 1) / 2, k];
-                        }
                     }
                 }
             }
-
-            var answer = new float[InputSize.Item1, InputSize.Item2, InputSize.Item3];
-            for (int k = 0; k < InputSize.Item3; k++) {
-                for (int r = 0; r < InputSize.Item1; r++) {
-                    for (int c = 0; c < InputSize.Item2; c++) {
-                        answer[r, c, k] = Convolution(paddedInput, rotatedKernel, r, c, k);
-                    }
-                }
-            }
-
-            return answer;
         }
 
         internal float[,,] Forward(float[,,] input) {
             Input = input;
-            for (int r = 0; r < OutputSize.Item1; r++) {
-                for (int c = 0; c < OutputSize.Item2; c++) {
-                    for (int k = 0; k < NumOfKernal; k++) {
-                        FeatureMap[r, c, k] = Biases[r, c, k];
-                        for (int ch = 0; ch < InputSize.Item3; ch++) {
-                            FeatureMap[r, c, k] += Convolution(input, Kernals[k], r, c, ch);
+            for (int k = 0; k < NumOfKernal; k++) {
+                for (int ch = 0; ch < KernalShape.Item1; ch++) {
+                    for (int r = 0; r < OutputShape.Item2; r++) {
+                        for (int c = 0; c < OutputShape.Item3; c++) {
+                            FeatureMap[k, r, c] = Convolution(Input, Kernals[k], r, c, ch) + Biases[k];
                         }
-                        FeatureMap[r, c, k] = ActivationFunction(FeatureMap[r, c, k]);
                     }
                 }
             }
             return FeatureMap;
         }
 
-        internal void Backward(float[,,] deltas) {
-            var dK = new float[NumOfKernal][,,];
+        internal void Backward(float[,,] deltaFeatureMap) {
+            //dY is gradient of current layer output [Channel(NumOfKernal), Height, Width]
+            DeltaFeatureMap = deltaFeatureMap;
+
+            //DeltaBiases, for update Biases. float[k]
             for (int k = 0; k < NumOfKernal; k++) {
-                dK[k] = new float[KernalSize.Item1, KernalSize.Item2, KernalSize.Item3];
-                for (int r = 0; r < KernalSize.Item1; r++) {
-                    for (int c = 0; c < KernalSize.Item2; c++) {
-                        for (int ch = 0; ch < InputSize.Item3; ch++) {
-                            dK[k][r, c, ch] = Convolution(Input, deltas, r, c, ch);
+                DeltaBiases[k] = 0f;
+                for (int r = 0; r < OutputShape.Item2; r++) {
+                    for (int c = 0; c < OutputShape.Item3; c++) {
+                        DeltaBiases[k] += deltaFeatureMap[k, r, c];
+                    }
+                }
+            }
+
+            //DeltaKernals, for update Kernals. float[k][ch, r, c]
+            for (int k = 0; k < NumOfKernal; k++) {
+                for (int ch = 0; ch < KernalShape.Item1; ch++) {
+                    for (int r = 0; r < KernalShape.Item2; r++) {
+                        for (int c = 0; c < KernalShape.Item3; c++) {
+                            DeltaKernals[k][ch, r, c] = Convolution(Input, DeltaFeatureMap, r, c, ch);
                         }
                     }
                 }
             }
 
+            //DeltaInput, back propagate to privious layer. float[ch, r, c]
+            for (int ch = 0; ch < InputShape.Item1; ch++) {
+                for (int r = 0; r < InputShape.Item2; r++) {
+                    for (int c = 0; c < InputShape.Item3; c++) {
+                        DeltaInput[ch, r, c] = 0f;
+                    }
+                }
+            }
+            for (int k = 0; k < NumOfKernal; k++) {
+                FullyConvolution(DeltaFeatureMap, Kernals[k], DeltaInput, k);
+            }
+        }
 
+        internal void UpdateWeights(float learnRate) {
+            //Biases
+            for (int k = 0; k < NumOfKernal; k++) {
+                Biases[k] += learnRate * DeltaBiases[k];
+            }
 
-
-
-
+            //Kernals
+            for (int k = 0; k < NumOfKernal; k++) {
+                for (int ch = 0; ch < KernalShape.Item1; ch++) {
+                    for (int r = 0; r < KernalShape.Item2; r++) {
+                        for (int c = 0; c < KernalShape.Item3; c++) {
+                            Kernals[k][ch, r, c] += learnRate * DeltaKernals[k][ch, r, c];
+                        }
+                    }
+                }
+            }
         }
     }
 
