@@ -19,6 +19,7 @@ using AIHW.CNN;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Imaging;
 using System.Buffers.Binary;
+using System.Threading;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -55,10 +56,10 @@ namespace AIHW {
             }
 
             //networkShape (kernalSize.1, kernalSize.2, numOfKernal)
-            var networkShape = new (int, int, int)[] { (7, 7, 8), (7, 7, 8), (16, 16, 10) };
+            var networkShape = new (int, int, int)[] { (7, 7, 1), (7, 7, 1), (5, 5, 1), (5, 5, 1), (3, 3, 1), (3, 3, 1), (4, 4, 10) };
             var inputShape = (1, 28, 28);
             var epoch = 5;
-            var learnRate = 0.0001f;
+            var learnRate = 0.01f;
             TestIndex = 0;
 
             ConvolutionalNeuralNetwork = new ConvolutionalNeuralNetwork(networkShape, inputShape, epoch, learnRate);
@@ -127,7 +128,7 @@ namespace AIHW {
         }
 
         private void TrainButtonClick(object sender, RoutedEventArgs e) {
-            ConvolutionalNeuralNetwork.Train(TrainData, TrainLabel, Dispatcher, TestTextBlock);
+            new Thread(() => ConvolutionalNeuralNetwork.Train(TrainData, TrainLabel, Dispatcher, TestTextBlock)).Start();
             TestButton.IsEnabled = true;
             NextButton.IsEnabled = true;
         }

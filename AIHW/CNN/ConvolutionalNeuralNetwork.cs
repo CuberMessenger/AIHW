@@ -31,8 +31,10 @@ namespace AIHW.CNN {
         internal static float ReLuDerivative(float relu) => relu > 0f ? 1f : 0f;
         internal static float Sigmoid(float x) => 1f / (1f + (float)Math.Exp(-x));
         internal static float SigmoidDerivative(float sigmoid) => sigmoid * (1f - sigmoid);
+        internal static float Linear(float x) => x;
+        internal static float LinearDerivative(float linear) => 1f;
 
-        internal ConvolutionalLayer(int numOfKernal, (int, int) kernalShape, (int, int, int) inputShape) {
+        internal ConvolutionalLayer(int numOfKernal, (int, int) kernalShape, (int, int, int) inputShape, bool isOutputLayer = false) {
             NumOfKernal = numOfKernal;
             KernalShape = (inputShape.Item1, kernalShape.Item1, kernalShape.Item2);//[Channel, Height, Width]
             InputShape = inputShape;
@@ -64,8 +66,14 @@ namespace AIHW.CNN {
             FeatureMap = new float[OutputShape.Item1, OutputShape.Item2, OutputShape.Item3];
             DeltaFeatureMap = new float[OutputShape.Item1, OutputShape.Item2, OutputShape.Item3];
 
-            ActivationFunction = Sigmoid;
-            ActivationDerivative = SigmoidDerivative;
+            if (isOutputLayer) {
+                ActivationFunction = Sigmoid;
+                ActivationDerivative = SigmoidDerivative;
+            }
+            else {
+                ActivationFunction = Sigmoid;
+                ActivationDerivative = SigmoidDerivative;
+            }
         }
 
         internal float Convolution(float[,,] input, float[,,] kernal, int startRow, int startColumn, int channel) {
@@ -149,7 +157,7 @@ namespace AIHW.CNN {
                 DeltaBiases[k] = 0f;
                 for (int r = 0; r < OutputShape.Item2; r++) {
                     for (int c = 0; c < OutputShape.Item3; c++) {
-                        DeltaBiases[k] += deltaFeatureMap[k, r, c];
+                        DeltaBiases[k] += DeltaFeatureMap[k, r, c];
                     }
                 }
             }
@@ -189,7 +197,7 @@ namespace AIHW.CNN {
         internal void UpdateWeights(float learnRate) {
             //Biases
             for (int k = 0; k < NumOfKernal; k++) {
-                Biases[k] += learnRate * DeltaBiases[k];
+                Biases[k] -= learnRate * DeltaBiases[k];
             }
 
             //Kernals
@@ -197,7 +205,8 @@ namespace AIHW.CNN {
                 for (int ch = 0; ch < KernalShape.Item1; ch++) {
                     for (int r = 0; r < KernalShape.Item2; r++) {
                         for (int c = 0; c < KernalShape.Item3; c++) {
-                            Kernals[k][ch, r, c] += learnRate * DeltaKernals[k][ch, r, c];
+                            //Kernals[k][ch, r, c] -= learnRate * DeltaKernals[k][ch, r, c];
+                            Kernals[k][ch, r, c] -= learnRate * DeltaKernals[k][ch, r, c] * Input[ch, r, c];
                         }
                     }
                 }
@@ -262,17 +271,20 @@ namespace AIHW.CNN {
             Layers[0] = new ConvolutionalLayer(networkShape[0].Item3,
                     (networkShape[0].Item1, networkShape[0].Item2),
                     inputShape);
-            for (int i = 1; i < Layers.Length; i++) {
+            for (int i = 1; i < Layers.Length - 1; i++) {
                 Layers[i] = new ConvolutionalLayer(networkShape[i].Item3,
                     (networkShape[i].Item1, networkShape[i].Item2),
                     Layers[i - 1].OutputShape);
             }
+            Layers[Layers.Length - 1] = new ConvolutionalLayer(networkShape[Layers.Length - 1].Item3,
+                    (networkShape[Layers.Length - 1].Item1, networkShape[Layers.Length - 1].Item2),
+                    Layers[Layers.Length - 2].OutputShape, isOutputLayer: true);
         }
 
         internal async void Train(float[][,,] trainData, int[] trainLabel, CoreDispatcher coreDispatcher, TextBlock textBlock) {
             float[] delta = null;
-            //int numOfInstance = 10000;
-            int numOfInstance = trainData.Length;
+            int numOfInstance = 10000;
+            //int numOfInstance = trainData.Length;
             for (int e = 0; e < Epoch; e++) {
                 for (int instanceIndex = 0; instanceIndex < numOfInstance; instanceIndex++) {
                     //Forward
@@ -307,9 +319,9 @@ namespace AIHW.CNN {
                         layer.UpdateWeights(LearnRate);
                     }
 
-                    if (instanceIndex % 1000 == 0) {
+                    if (instanceIndex % 100 == 0) {
                         await coreDispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-                            textBlock.Text = $"Epoch: {e}, Loss: {Losses[e] / instanceIndex}";
+                            textBlock.Text = $"Epoch: {e}, Loss: {Losses[e] / (instanceIndex + 1)}";
                         });
                     }
                 }
@@ -321,7 +333,8 @@ namespace AIHW.CNN {
 
         internal float Test(float[][,,] testData, int[] testLabel) {
             float accuracy = 0f;
-            int numOfInstance = testData.Length;
+            int numOfInstance = 1000;
+            //int numOfInstance = testData.Length;
             for (int instanceIndex = 0; instanceIndex < numOfInstance; instanceIndex++) {
                 accuracy += TestOne(testData[instanceIndex]) == testLabel[instanceIndex] ? 1f : 0f;
             }

@@ -182,8 +182,8 @@ namespace AIHW {
             TestIndex++;
         }
 
-        private async void TrainButtonClick(object sender, RoutedEventArgs e) {
-            BackPropagationNeuralNetwork.Train(TrainData, TrainLabel, Dispatcher, TestTextBlock);
+        private void TrainButtonClick(object sender, RoutedEventArgs e) {
+            new Thread(() => BackPropagationNeuralNetwork.Train(TrainData, TrainLabel, Dispatcher, TestTextBlock)).Start();
             TestButton.IsEnabled = true;
             NextButton.IsEnabled = true;
         }
