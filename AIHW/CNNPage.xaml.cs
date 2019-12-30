@@ -56,10 +56,13 @@ namespace AIHW {
             }
 
             //networkShape (kernalSize.1, kernalSize.2, numOfKernal)
-            var networkShape = new (int, int, int)[] { (7, 7, 1), (7, 7, 1), (5, 5, 1), (5, 5, 1), (3, 3, 1), (3, 3, 1), (4, 4, 10) };
+            //var networkShape = new (int, int, int)[] { (7, 7, 1), (7, 7, 1), (5, 5, 1), (5, 5, 1), (3, 3, 1), (3, 3, 1), (4, 4, 10) };
+            var networkShape = new (int, int, int)[] { (7, 7, 4), (7, 7, 4), (16, 16, 10) };
             var inputShape = (1, 28, 28);
-            var epoch = 5;
-            var learnRate = 0.01f;
+            //var networkShape = new (int, int, int)[] { (3, 3, 2) };
+            //var inputShape = (2, 4, 4);
+            var epoch = 10;
+            var learnRate = 0.005f;
             TestIndex = 0;
 
             ConvolutionalNeuralNetwork = new ConvolutionalNeuralNetwork(networkShape, inputShape, epoch, learnRate);

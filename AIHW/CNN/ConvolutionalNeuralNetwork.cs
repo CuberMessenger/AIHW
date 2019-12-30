@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -74,6 +75,86 @@ namespace AIHW.CNN {
                 ActivationFunction = Sigmoid;
                 ActivationDerivative = SigmoidDerivative;
             }
+
+            ////////////////////////////////////////
+            return;
+            for (int k = 0; k < numOfKernal; k++) {
+                Biases[k] = 0f;
+            }
+            ActivationFunction = Linear;
+            ActivationDerivative = LinearDerivative;
+
+            for (int r = 0, i = 0; r < 4; r++) {
+                for (int c = 0; c < 4; c++) {
+                    Input[0, r, c] = i++ * 0.1f;
+                    Debug.Write(Input[0, r, c].ToString() + " ");
+                }
+                Debug.WriteLine("");
+            }
+            Debug.WriteLine("");
+            for (int r = 0, i = 0; r < 4; r++) {
+                for (int c = 0; c < 4; c++) {
+                    Input[1, r, c] = i++ * 0.1f - 0.8f;
+                    Debug.Write(Input[1, r, c].ToString() + " ");
+                }
+                Debug.WriteLine("");
+            }
+            Debug.WriteLine("");
+            for (int r = 0, i = 0; r < 3; r++) {
+                for (int c = 0; c < 3; c++) {
+                    Kernals[0][0, r, c] = 0.9f - i++ * 0.1f;
+                    Debug.Write(Kernals[0][0, r, c].ToString() + " ");
+                }
+                Debug.WriteLine("");
+            }
+            Debug.WriteLine("");
+            for (int r = 0, i = 0; r < 3; r++) {
+                for (int c = 0; c < 3; c++) {
+                    Kernals[0][1, r, c] = 1.0f + i++ * 0.1f;
+                    Debug.Write(Kernals[0][1, r, c].ToString() + " ");
+                }
+                Debug.WriteLine("");
+            }
+            Debug.WriteLine("");
+            for (int r = 0, i = 0; r < 3; r++) {
+                for (int c = 0; c < 3; c++) {
+                    Kernals[1][0, r, c] = 1.0f + i++ * 0.1f;
+                    Debug.Write(Kernals[1][0, r, c].ToString() + " ");
+                }
+                Debug.WriteLine("");
+            }
+            Debug.WriteLine("");
+            for (int r = 0, i = 0; r < 3; r++) {
+                for (int c = 0; c < 3; c++) {
+                    Kernals[1][1, r, c] = 0.9f - i++ * 0.1f;
+                    Debug.Write(Kernals[1][1, r, c].ToString() + " ");
+                }
+                Debug.WriteLine("");
+            }
+
+
+            var ans = Forward(Input);
+
+            Debug.WriteLine("");
+            for (int r = 0, i = 1; r < 2; r++) {
+                for (int c = 0; c < 2; c++) {
+                    DeltaFeatureMap[0, r, c] = i++;
+                    Debug.Write(DeltaFeatureMap[0, r, c].ToString() + " ");
+                }
+                Debug.WriteLine("");
+            }
+            Debug.WriteLine("");
+            for (int r = 0, i = 4; r < 2; r++) {
+                for (int c = 0; c < 2; c++) {
+                    DeltaFeatureMap[1, r, c] = i--;
+                    Debug.Write(DeltaFeatureMap[1, r, c].ToString() + " ");
+                }
+                Debug.WriteLine("");
+            }
+            Debug.WriteLine("");
+
+            var deltaIn = Backward(DeltaFeatureMap, 0.01f);
+
         }
 
         internal float Convolution(float[,,] input, float[,,] kernal, int startRow, int startColumn, int channel) {
@@ -100,7 +181,6 @@ namespace AIHW.CNN {
                 }
             }
 
-            var paddingShape = ((kernalShape.Item2 - 1) / 2, (kernalShape.Item3 - 1) / 2);
             var inputShape = (input.GetLength(0), input.GetLength(1), input.GetLength(2));
             var paddedInput = new float[inputShape.Item2 + (kernalShape.Item2 - 1) * 2, inputShape.Item3 + (kernalShape.Item3 - 1) * 2];
             for (int r = 0; r < paddedInput.GetLength(0); r++) {
@@ -110,7 +190,7 @@ namespace AIHW.CNN {
             }
             for (int r = 0; r < inputShape.Item2; r++) {
                 for (int c = 0; c < inputShape.Item3; c++) {
-                    paddedInput[r + paddingShape.Item1, c + paddingShape.Item2] = input[indexOfInput, r, c];
+                    paddedInput[r + kernalShape.Item2 - 1, c + kernalShape.Item3 - 1] = input[indexOfInput, r, c];
                 }
             }
 
@@ -130,18 +210,26 @@ namespace AIHW.CNN {
         internal float[,,] Forward(float[,,] input) {
             Input = input;
             for (int k = 0; k < NumOfKernal; k++) {
-                for (int ch = 0; ch < KernalShape.Item1; ch++) {
-                    for (int r = 0; r < OutputShape.Item2; r++) {
-                        for (int c = 0; c < OutputShape.Item3; c++) {
-                            FeatureMap[k, r, c] = ActivationFunction(Convolution(Input, Kernals[k], r, c, ch) + Biases[k]);
+                for (int r = 0; r < OutputShape.Item2; r++) {
+                    for (int c = 0; c < OutputShape.Item3; c++) {
+                        FeatureMap[k, r, c] = 0f;
+                        for (int ch = 0; ch < KernalShape.Item1; ch++) {
+                            FeatureMap[k, r, c] += Convolution(Input, Kernals[k], r, c, ch) + Biases[k];
                         }
+                    }
+                }
+            }
+            for (int k = 0; k < NumOfKernal; k++) {
+                for (int r = 0; r < OutputShape.Item2; r++) {
+                    for (int c = 0; c < OutputShape.Item3; c++) {
+                        FeatureMap[k, r, c] = ActivationFunction(FeatureMap[k, r, c]);
                     }
                 }
             }
             return FeatureMap;
         }
 
-        internal float[,,] Backward(float[,,] deltaFeatureMap) {
+        internal float[,,] Backward(float[,,] deltaFeatureMap, float learnRate) {
             //dY is gradient of current layer output [Channel(NumOfKernal), Height, Width]
             for (int ch = 0; ch < OutputShape.Item1; ch++) {
                 for (int r = 0; r < OutputShape.Item2; r++) {
@@ -171,7 +259,7 @@ namespace AIHW.CNN {
                             DeltaKernals[k][ch, r, c] = 0f;
                             for (int kr = 0; kr < OutputShape.Item2; kr++) {
                                 for (int kc = 0; kc < OutputShape.Item3; kc++) {
-                                    DeltaKernals[k][ch, r, c] += Input[ch, r, c] * DeltaFeatureMap[k, kr, kc];
+                                    DeltaKernals[k][ch, r, c] += Input[ch, r + kr, c + kc] * DeltaFeatureMap[k, kr, kc];
                                 }
                             }
                         }
@@ -191,6 +279,8 @@ namespace AIHW.CNN {
                 FullyConvolution(DeltaFeatureMap, Kernals[k], DeltaInput, k);
             }
 
+            UpdateWeights(learnRate);
+
             return DeltaInput;
         }
 
@@ -205,8 +295,8 @@ namespace AIHW.CNN {
                 for (int ch = 0; ch < KernalShape.Item1; ch++) {
                     for (int r = 0; r < KernalShape.Item2; r++) {
                         for (int c = 0; c < KernalShape.Item3; c++) {
-                            //Kernals[k][ch, r, c] -= learnRate * DeltaKernals[k][ch, r, c];
-                            Kernals[k][ch, r, c] -= learnRate * DeltaKernals[k][ch, r, c] * Input[ch, r, c];
+                            Kernals[k][ch, r, c] -= learnRate * DeltaKernals[k][ch, r, c];
+                            //Kernals[k][ch, r, c] -= learnRate * DeltaKernals[k][ch, r, c] * Input[ch, r, c];
                         }
                     }
                 }
@@ -311,13 +401,13 @@ namespace AIHW.CNN {
                         gradient[i, 0, 0] = delta[i];
                     }
                     for (int i = Layers.Length - 1; i >= 0; i--) {
-                        gradient = Layers[i].Backward(gradient);
+                        gradient = Layers[i].Backward(gradient, LearnRate);
                     }
 
                     //Update
-                    foreach (var layer in Layers) {
-                        layer.UpdateWeights(LearnRate);
-                    }
+                    //foreach (var layer in Layers) {
+                    //    layer.UpdateWeights(LearnRate);
+                    //}
 
                     if (instanceIndex % 100 == 0) {
                         await coreDispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
