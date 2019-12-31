@@ -373,7 +373,7 @@ namespace AIHW.CNN {
 
         internal async void Train(float[][,,] trainData, int[] trainLabel, CoreDispatcher coreDispatcher, TextBlock textBlock) {
             float[] delta = null;
-            int numOfInstance = 10000;
+            int numOfInstance = 2000;
             //int numOfInstance = trainData.Length;
             for (int e = 0; e < Epoch; e++) {
                 for (int instanceIndex = 0; instanceIndex < numOfInstance; instanceIndex++) {
