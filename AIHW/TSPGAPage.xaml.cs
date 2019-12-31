@@ -71,10 +71,18 @@ namespace AIHW {
                     }
                 }
             }
-            LocalSearchTSP(answer);
-
+            if (Random.NextDouble() < 0.2d) {
+                LocalSearchTSP(answer);
+                return answer;
+            }
             if (Random.NextDouble() < 0.2d) {
                 SwapPair(answer, RandomPair());
+                return answer;
+            }
+            if (Random.NextDouble() < 0.2d) {
+                Shuffle(answer);
+                LocalSearchTSP(answer);
+                return answer;
             }
             return answer;
         }
@@ -130,12 +138,10 @@ namespace AIHW {
             CostBuffer = new List<double>();
             for (int i = 0; i < PopulationSize; i++) {
                 Shuffle(CityOrder);
-                //LocalSearchTSP();
                 Population.Add(new List<int>(CityOrder));
             }
 
             MinCost = Cost;
-            double sum;
             List<int> bestAnswer = new List<int>(CityOrder);
             List<double> scores;
 
@@ -147,14 +153,24 @@ namespace AIHW {
             }
 
             void GenerateScores() {
-                sum = CostBuffer.Sum();
-                scores = new List<double>(CostBuffer);
-                double minValue = scores.Min();
-                double maxValue = scores.Max();
-                for (int i = 0; i < scores.Count; i++) {
-                    scores[i] = (scores[i] - minValue) / (maxValue - minValue);
-                    scores[i] = 1 - scores[i];
+                List<(int, double)> instance = new List<(int, double)>();
+                for (int i = 0; i < CostBuffer.Count; i++) {
+                    instance.Add((i, CostBuffer[i]));
                 }
+                instance = instance.OrderByDescending(x => x.Item2).ToList();
+
+                scores = new List<double>(CostBuffer);
+                for (int i = 0; i < instance.Count; i++) {
+                    scores[instance[i].Item1] = i + 1;
+                }
+
+                //scores = new List<double>(CostBuffer);
+                //double minValue = scores.Min();
+                //double maxValue = scores.Max();
+                //for (int i = 0; i < scores.Count; i++) {
+                //    scores[i] = (scores[i] - minValue) / (maxValue - minValue);
+                //    scores[i] = 1 - scores[i];
+                //}
             }
 
             Generation = 0;

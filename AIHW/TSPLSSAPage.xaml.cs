@@ -93,7 +93,7 @@ namespace AIHW {
             Cost = TSPCost(CityOrder);
             Temperature = 200d;
             double deltaCost;
-            while (Cost > TargetCost || Temperature >= 1d) {
+            while (Cost > TargetCost && Temperature >= 1d) {
                 for (int i = 0; Cost > TargetCost && i < 0x0000FFFF; i++) {
                     //SA
                     Cost = TSPCost(CityOrder);
