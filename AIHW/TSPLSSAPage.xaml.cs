@@ -38,18 +38,6 @@ namespace AIHW {
             while (Cost > TargetCost) {
                 minCost = double.MaxValue;
                 bestNeighbour.Clear();
-                //Switch two
-                for (int i = 0; i < N; i++) {
-                    for (int j = i + 1; j < N; j++) {
-                        SwapPair(CityOrder, (i, j));
-                        currentCost = TSPCost(CityOrder);
-                        if (currentCost < minCost) {
-                            minCost = currentCost;
-                            bestNeighbour = CityOrder.ToList();
-                        }
-                        SwapPair(CityOrder, (i, j));
-                    }
-                }
                 //Random switch four
                 for (int i = 0; i < N * N; i++) {
                     var switchPair1 = RandomPair();
@@ -63,6 +51,19 @@ namespace AIHW {
                     }
                     SwapPair(CityOrder, switchPair2);
                     SwapPair(CityOrder, switchPair1);
+                }
+
+                //Switch two
+                for (int i = 0; i < N; i++) {
+                    for (int j = i + 1; j < N; j++) {
+                        SwapPair(CityOrder, (i, j));
+                        currentCost = TSPCost(CityOrder);
+                        if (currentCost < minCost) {
+                            minCost = currentCost;
+                            bestNeighbour = CityOrder.ToList();
+                        }
+                        SwapPair(CityOrder, (i, j));
+                    }
                 }
 
                 //Check Dead End
