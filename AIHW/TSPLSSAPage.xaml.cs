@@ -38,20 +38,33 @@ namespace AIHW {
             while (Cost > TargetCost) {
                 minCost = double.MaxValue;
                 bestNeighbour.Clear();
-                //Random switch four
-                for (int i = 0; i < N * N; i++) {
-                    var switchPair1 = RandomPair();
-                    var switchPair2 = RandomPair();
-                    SwapPair(CityOrder, switchPair1);
-                    SwapPair(CityOrder, switchPair2);
+
+                for (int i = 0; i < N; i++) {
+                    int seperateStart = Random.Next(0, N - 1);
+                    int seperateEnd = Random.Next(seperateStart + 1, N);
+                    CityOrder.Reverse(seperateStart, seperateEnd - seperateStart);
                     currentCost = TSPCost(CityOrder);
                     if (currentCost < minCost) {
                         minCost = currentCost;
                         bestNeighbour = CityOrder.ToList();
                     }
-                    SwapPair(CityOrder, switchPair2);
-                    SwapPair(CityOrder, switchPair1);
+                    CityOrder.Reverse(seperateStart, seperateEnd - seperateStart);
                 }
+
+                ////Random switch four
+                //for (int i = 0; i < N * N; i++) {
+                //    var switchPair1 = RandomPair();
+                //    var switchPair2 = RandomPair();
+                //    SwapPair(CityOrder, switchPair1);
+                //    SwapPair(CityOrder, switchPair2);
+                //    currentCost = TSPCost(CityOrder);
+                //    if (currentCost < minCost) {
+                //        minCost = currentCost;
+                //        bestNeighbour = CityOrder.ToList();
+                //    }
+                //    SwapPair(CityOrder, switchPair2);
+                //    SwapPair(CityOrder, switchPair1);
+                //}
 
                 //Switch two
                 for (int i = 0; i < N; i++) {
@@ -92,18 +105,22 @@ namespace AIHW {
         private async void SimulatedAnnealingLocalSearchTSP() {
             (int, int) switchPair;
             Cost = TSPCost(CityOrder);
-            Temperature = 200d;
+            Temperature = 100d;
             double deltaCost;
-            while (Cost > TargetCost && Temperature >= 1d) {
-                for (int i = 0; Cost > TargetCost && i < 0x0000FFFF; i++) {
+            while (Temperature >= 1d) {
+                for (int i = 0; i < 0x0000FFFF; i++) {
                     //SA
                     Cost = TSPCost(CityOrder);
+                    int seperateStart = Random.Next(0, N - 1);
+                    int seperateEnd = Random.Next(seperateStart + 1, N);
+                    CityOrder.Reverse(seperateStart, seperateEnd - seperateStart);
                     switchPair = RandomPair();
                     SwapPair(CityOrder, switchPair);
 
                     deltaCost = TSPCost(CityOrder) - Cost;
                     if (deltaCost >= 0 && (Random.NextDouble() >= Math.Exp(-(deltaCost / Temperature)))) {
                         SwapPair(CityOrder, switchPair);
+                        CityOrder.Reverse(seperateStart, seperateEnd - seperateStart);
                     }
                     if (DisplayEveryStep) {
                         await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {

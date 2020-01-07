@@ -73,13 +73,18 @@ namespace AIHW {
             }
             if (Random.NextDouble() < 0.2d) {
                 LocalSearchTSP(answer);
+            }
+            if (Random.NextDouble() < 0.4d) {
+                int seperateStart = Random.Next(0, N - 1);
+                int seperateEnd = Random.Next(seperateStart + 1, N);
+                answer.Reverse(seperateStart, seperateEnd - seperateStart);
                 return answer;
             }
-            if (Random.NextDouble() < 0.2d) {
+            if (Random.NextDouble() < 0.1d) {
                 SwapPair(answer, RandomPair());
                 return answer;
             }
-            if (Random.NextDouble() < 0.2d) {
+            if (Random.NextDouble() < 0.1d) {
                 Shuffle(answer);
                 LocalSearchTSP(answer);
                 return answer;
