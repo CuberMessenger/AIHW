@@ -203,6 +203,7 @@ namespace AIHW.BPNN {
                         });
                     }
                 }
+                LearnRate *= 0.8f;
             }
             await coreDispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 textBlock.Text = $"TrainDone Loss: {Losses.Last() / numOfInstance}";

@@ -60,7 +60,7 @@ namespace AIHW {
                 }
             }
 
-            var networkShape = new int[] { 28 * 28, 32, 10 };
+            var networkShape = new int[] { 28 * 28, 64, 32, 16, 10 };
             var epoch = 5;
             var learnRate = 0.02f;
             TestIndex = 0;

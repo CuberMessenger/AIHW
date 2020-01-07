@@ -373,7 +373,7 @@ namespace AIHW.CNN {
 
         internal async void Train(float[][,,] trainData, int[] trainLabel, CoreDispatcher coreDispatcher, TextBlock textBlock) {
             float[] delta = null;
-            int numOfInstance = 2000;
+            int numOfInstance = 4000;
             //int numOfInstance = trainData.Length;
             for (int e = 0; e < Epoch; e++) {
                 for (int instanceIndex = 0; instanceIndex < numOfInstance; instanceIndex++) {
@@ -415,6 +415,7 @@ namespace AIHW.CNN {
                         });
                     }
                 }
+                LearnRate *= 0.8f;
             }
             await coreDispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 textBlock.Text = $"TrainDone Loss: {Losses.Last() / numOfInstance}";
