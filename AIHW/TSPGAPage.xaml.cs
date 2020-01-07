@@ -179,7 +179,7 @@ namespace AIHW {
             }
 
             Generation = 0;
-            while (MinCost > TargetCost) {
+            while (Generation <= 1000) {
                 Generation++;
                 for (int i = 0; i < PopulationSize; i++) {
                     CityOrder = Population[i];

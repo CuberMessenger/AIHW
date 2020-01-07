@@ -33,8 +33,8 @@ namespace AIHW {
 
         public TSPBasePage() {
             this.InitializeComponent();
-            this.Random = new Random(2223);
-            //this.Random = new Random((int)DateTime.Now.Ticks);
+            //this.Random = new Random(2223);
+            this.Random = new Random((int)DateTime.Now.Ticks);
             Coordinate = new List<(double, double)>();
             Lines = new List<Line>();
         }

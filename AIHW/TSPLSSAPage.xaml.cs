@@ -35,7 +35,7 @@ namespace AIHW {
             Cost = TSPCost(CityOrder);
             double minCost, currentCost;
             List<int> bestNeighbour = new List<int>();
-            while (Cost > TargetCost) {
+            while (true) {
                 minCost = double.MaxValue;
                 bestNeighbour.Clear();
 
@@ -106,8 +106,9 @@ namespace AIHW {
             (int, int) switchPair;
             Cost = TSPCost(CityOrder);
             Temperature = 100d;
-            double deltaCost;
-            while (Temperature >= 1d) {
+            double deltaCost, bestCost = double.MaxValue;
+            List<int> bestAnswer = null;
+            while (Temperature >= .5d) {
                 for (int i = 0; i < 0x0000FFFF; i++) {
                     //SA
                     Cost = TSPCost(CityOrder);
@@ -122,6 +123,12 @@ namespace AIHW {
                         SwapPair(CityOrder, switchPair);
                         CityOrder.Reverse(seperateStart, seperateEnd - seperateStart);
                     }
+
+                    if (Cost < bestCost) {
+                        bestCost = Cost;
+                        bestAnswer = new List<int>(CityOrder);
+                    }
+
                     if (DisplayEveryStep) {
                         await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                             DisplayRoute(TSPCanvas);
@@ -135,6 +142,8 @@ namespace AIHW {
                 });
                 Temperature *= 0.99;
             }
+            Cost = bestCost;
+            CityOrder = new List<int>(bestAnswer);
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
                 DisplayRoute(TSPCanvas);
                 Bindings.Update();
