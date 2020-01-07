@@ -9,7 +9,7 @@
   <Identity
     Name="06123568-5967-42dd-b965-d85a513ef91a"
     Publisher="CN=cuber"
-    Version="1.0.0.0" />
+    Version="1.0.2.0" />
 
   <mp:PhoneIdentity PhoneProductId="06123568-5967-42dd-b965-d85a513ef91a" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
